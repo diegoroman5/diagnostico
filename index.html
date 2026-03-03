@@ -321,6 +321,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
     <div class="sdmt-target" id="b4-symbol"></div>
     <div class="digit-btns" id="b4-digit-btns"></div>
     <p id="b4-mode-label" style="text-align:center;font-size:.82rem;color:var(--light)"></p>
+    <div class="btn-center" style="margin-top:12px"><button id="b4-start-btn" class="btn btn-primary" style="display:none" onclick="b4StartTest()">Comenzar prueba real (90s) →</button></div>
   </div>
   <div id="b4-phase-done" style="display:none;text-align:center">
     <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Tarea completada</p>
@@ -577,7 +578,12 @@ function renderA(){
 function aNext(){
   const q = aFlat[aCurrent];
   const key = q.moduleKey+'_'+q.qIdx;
-  if(state.aAnswers[key]===undefined){ alert('Por favor selecciona una respuesta.'); return; }
+  if(state.aAnswers[key]===undefined){
+    const container=document.getElementById('a-options');
+    const existing=container.querySelector('.inline-error');
+    if(!existing){ const e=document.createElement('p'); e.className='inline-error'; e.style.cssText='color:#F34D47;font-size:.85rem;margin:8px 0 0'; e.textContent='⚠ Por favor selecciona una respuesta.'; container.appendChild(e); }
+    return;
+  }
   if(aCurrent < aFlat.length-1){ aCurrent++; renderA(); }
   else{ showScreen('s-b-intro'); updateProgress(30,'Batería B — Tareas Cognitivas'); }
 }
@@ -817,11 +823,12 @@ let b4State={correct:0,total:0,timer:null,timeLeft:90,mode:'practice',practiceId
 function startB4(){
   b4State={correct:0,total:0,timer:null,timeLeft:90,mode:'practice',practiceIdx:0,practicing:true};
   // Build key display
-  const keyDiv=document.getElementById('b4-key');
-  keyDiv.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:1rem">'
+  const keyTable='<table style="width:100%;border-collapse:collapse;font-size:1rem">'
     +'<tr>'+b4Symbols.map(s=>'<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:1.1rem"><b>'+s+'</b></td>').join('')+'</tr>'
     +'<tr>'+b4Symbols.map(s=>'<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;color:var(--blue)"><b>'+b4Key[s]+'</b></td>').join('')+'</tr>'
     +'</table>';
+  document.getElementById('b4-key').innerHTML=keyTable;
+  document.getElementById('b4-key-preview').innerHTML=keyTable;
   // Build digit buttons
   const btns=document.getElementById('b4-digit-btns');
   btns.innerHTML='';
@@ -861,7 +868,12 @@ function b4Answer(digit){
   const sym=document.getElementById('b4-symbol').dataset.sym;
   if(b4State.practicing){
     const correct=b4Key[sym]===digit;
-    document.getElementById('b4-score-live').textContent=correct?'✅':'❌ (era '+b4Key[sym]+')';
+    document.getElementById('b4-score-live').textContent=correct?'✅ Correcto':'❌ Era '+b4Key[sym];
+    b4State.total++;
+    if(b4State.total>=5){
+      document.getElementById('b4-start-btn').textContent='Comenzar prueba real (90s) →';
+      document.getElementById('b4-start-btn').style.display='';
+    }
     setTimeout(()=>{ document.getElementById('b4-score-live').textContent=''; b4NextSymbol(); },700);
     return;
   }
@@ -914,7 +926,7 @@ function b5StartTest(){
     document.getElementById('b5-tbar').style.background=b5State.timeLeft>15?'var(--blue)':b5State.timeLeft>5?'var(--yellow)':'var(--red)';
     if(b5State.timeLeft<=0){ clearInterval(b5State.timer); b5Done(); }
   },1000);
-  document.getElementById('b5-start-btn').style.display='none';
+  // b5-start-btn no longer used — phase managed by b5Start()
   b5NextWord();
 }
 function b5Answer(colorName){
@@ -927,7 +939,11 @@ function b5Answer(colorName){
   } else {
     document.getElementById('b5-score-live').textContent=correct?'✅ Correcto':'❌ Era '+b5ColorMap[ink];
     b5State.practiceRound++;
-    if(b5State.practiceRound>=4){ document.getElementById('b5-start-btn').style.display=''; }
+    if(b5State.practiceRound>=4){
+      document.getElementById('b5-phase-active').style.display='none';
+      document.getElementById('b5-phase-test-start').style.display='';
+      document.getElementById('b5-practice-score').textContent='Completaste '+b5State.practiceRound+' ensayos de práctica. ¡Listo para la prueba real!';
+    }
   }
   b5NextWord();
 }
@@ -1053,7 +1069,12 @@ function renderC(){
   updateProgress(83+Math.round((cCurrent/cQuestions.length)*12),'Sección C — '+(cCurrent+1)+'/'+cQuestions.length);
 }
 function cNext(){
-  if(state.cAnswers[cCurrent]===undefined){ alert('Por favor selecciona una respuesta.'); return; }
+  if(state.cAnswers[cCurrent]===undefined){
+    const container=document.getElementById('c-options');
+    const existing=container.querySelector('.inline-error');
+    if(!existing){ const e=document.createElement('p'); e.className='inline-error'; e.style.cssText='color:#F34D47;font-size:.85rem;margin:8px 0 0'; e.textContent='⚠ Por favor selecciona una respuesta.'; container.appendChild(e); }
+    return;
+  }
   if(cCurrent<cQuestions.length-1){ cCurrent++; renderC(); }
   else{ calculateScores(); renderResults(); showScreen('s-results'); updateProgress(100,'Diagnóstico completado'); }
 }
@@ -1257,39 +1278,27 @@ function b1StartTrial(){ b1Begin(); }
 function b1Input(v){ b1Digit(v); }
 function b2StartTrial(){ b2Begin(); }
 function b3StartTrial(){ b3Begin(); }
-function b4StartPractice(){ 
+function b4StartPractice(){
   b4State.practicing=true;
-  document.getElementById('b4-start-btn').textContent='Comenzar prueba real →';
-  document.getElementById('b4-start-btn').onclick=b4StartTest;
-  document.getElementById('b4-start-btn').style.display='none';
-  // show practice panel
+  // Show active phase, hide instructions
+  document.getElementById('b4-phase-instructions').style.display='none';
+  document.getElementById('b4-phase-active').style.display='';
   document.getElementById('b4-timer').textContent='Práctica';
-  document.getElementById('b4-score-live').textContent='Prueba: indica el número del símbolo';
-  document.getElementById('b4-digit-btns').style.pointerEvents='';
-  // Show start test button after 5 practice answers
-  const origAnswer=b4Answer;
-  let practiceCount=0;
-  b4Answer=function(digit){
-    const sym=document.getElementById('b4-symbol').dataset.sym;
-    const correct=b4Key[sym]===digit;
-    document.getElementById('b4-score-live').textContent=correct?'✅ Correcto':'❌ Era '+b4Key[sym];
-    practiceCount++;
-    b4NextSymbol();
-    if(practiceCount>=5){
-      document.getElementById('b4-start-btn').textContent='Comenzar prueba real (90 seg) →';
-      document.getElementById('b4-start-btn').onclick=b4StartTest;
-      document.getElementById('b4-start-btn').style.display='';
-      b4Answer=origAnswer; // restore
-    }
-    setTimeout(()=>{ document.getElementById('b4-score-live').textContent=''; },600);
-  };
+  document.getElementById('b4-score-live').textContent='';
+  document.getElementById('b4-start-btn').style.display='none';
 }
 function b5Start(mode){
   if(mode==='practice'){
     b5State.practicing=true; b5State.practiceRound=0;
-    document.getElementById('b5-start-btn').style.display='none';
+    document.getElementById('b5-phase-instructions').style.display='none';
+    document.getElementById('b5-phase-test-start').style.display='none';
+    document.getElementById('b5-phase-active').style.display='';
+    document.getElementById('b5-timer').textContent='Práctica';
+    document.getElementById('b5-score-live').textContent='';
     b5NextWord();
   } else {
+    document.getElementById('b5-phase-test-start').style.display='none';
+    document.getElementById('b5-phase-active').style.display='';
     b5StartTest();
   }
 }
