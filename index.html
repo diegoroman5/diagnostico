@@ -38,7 +38,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
 .q-sub{font-size:.85rem;color:var(--light);margin-bottom:20px}
 .q-counter{font-size:.82rem;font-weight:600;color:var(--blue);margin-bottom:6px}
 .options{display:flex;flex-direction:column;gap:10px}
-.opt{padding:14px 20px;border:2px solid #E0E6ED;border-radius:10px;cursor:pointer;transition:all .18s;font-size:.95rem;display:flex;align-items:center;gap:12px}
+.opt{padding:14px 20px;border:2px solid #E0E6ED;border-radius:10px;cursor:pointer;transition:all .18s;font-size:.95rem;display:flex;align-items:center;gap:12px;background:#fff;color:var(--text);text-align:left;width:100%}
 .opt:hover{border-color:var(--blue);background:#F0F7FF}
 .opt.selected{border-color:var(--blue);background:var(--lblue);font-weight:600}
 .opt .badge{min-width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -410,7 +410,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
   <div id="b6-phase-done" style="display:none;text-align:center">
     <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Sección B completada</p>
     <p id="b6-score-msg" style="color:var(--light);font-size:.9rem;margin-bottom:20px"></p>
-    <button class="btn btn-primary" onclick="showScreen('s-c');renderC(0)">Continuar a Sección C →</button>
+    <button class="btn btn-primary" onclick="startC()">Continuar a Sección C →</button>
   </div>
 </div>
 </div>
@@ -1078,27 +1078,42 @@ let cCurrent=0;
 
 function startC(){
   cCurrent=0; state.cAnswers=[];
-  renderC();
   showScreen('s-c');
   updateProgress(83,'Sección C — Metacognición');
+  // Defer rendering to ensure DOM is visible before manipulation
+  setTimeout(renderC, 30);
 }
 function renderC(){
-  const q=cQuestions[cCurrent];
-  document.getElementById('c-q-counter').textContent=(cCurrent+1)+' / '+cQuestions.length;
-  document.getElementById('c-q-label').textContent=(cCurrent+1)+'. '+q.label;
-  document.getElementById('c-progress-text').textContent=Math.round((cCurrent/cQuestions.length)*100)+'% completado';
-  const saved=state.cAnswers[cCurrent];
-  const container=document.getElementById('c-options'); container.innerHTML='';
-  q.options.forEach((opt,i)=>{
-    const btn=document.createElement('button');
-    btn.className='opt'+(saved===i?' selected':'');
-    btn.textContent=opt;
-    btn.onclick=()=>{ state.cAnswers[cCurrent]=i; renderC(); };
-    container.appendChild(btn);
-  });
-  document.getElementById('c-prev-btn').style.display=cCurrent===0?'none':'';
-  document.getElementById('c-next-btn').textContent=cCurrent===cQuestions.length-1?'Ver mi diagnóstico →':'Siguiente →';
-  updateProgress(83+Math.round((cCurrent/cQuestions.length)*12),'Sección C — '+(cCurrent+1)+'/'+cQuestions.length);
+  try {
+    const q=cQuestions[cCurrent];
+    const counter=document.getElementById('c-q-counter');
+    const label=document.getElementById('c-q-label');
+    const progressTxt=document.getElementById('c-progress-text');
+    const container=document.getElementById('c-options');
+    if(!counter||!label||!container){ setTimeout(renderC,50); return; }
+    counter.textContent=(cCurrent+1)+' / '+cQuestions.length;
+    label.textContent=(cCurrent+1)+'. '+q.label;
+    if(progressTxt) progressTxt.textContent=Math.round((cCurrent/cQuestions.length)*100)+'% completado';
+    const saved=state.cAnswers[cCurrent];
+    container.innerHTML='';
+    q.options.forEach((opt,i)=>{
+      const btn=document.createElement('button');
+      btn.className='opt'+(saved===i?' selected':'');
+      btn.textContent=opt;
+      btn.style.cssText='background:#fff;color:#1A0A5E;width:100%;text-align:left;padding:14px 20px;border:2px solid '+(saved===i?'#651FFF':'#E0E6ED')+';border-radius:10px;cursor:pointer;font-size:.95rem;margin-bottom:2px;display:block';
+      if(saved===i) btn.style.background='#EDE7FF';
+      btn.onclick=()=>{ state.cAnswers[cCurrent]=i; renderC(); };
+      container.appendChild(btn);
+    });
+    const prevBtn=document.getElementById('c-prev-btn');
+    const nextBtn=document.getElementById('c-next-btn');
+    if(prevBtn) prevBtn.style.display=cCurrent===0?'none':'';
+    if(nextBtn) nextBtn.textContent=cCurrent===cQuestions.length-1?'Ver mi diagnóstico →':'Siguiente →';
+    updateProgress(83+Math.round((cCurrent/cQuestions.length)*12),'Sección C — '+(cCurrent+1)+'/'+cQuestions.length);
+  } catch(e) {
+    console.error('renderC error:', e);
+    setTimeout(renderC, 100);
+  }
 }
 function cNext(){
   if(state.cAnswers[cCurrent]===undefined){
