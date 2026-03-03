@@ -65,7 +65,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
 .word-sequence{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0;min-height:44px}
 .word-tag{background:var(--dark);color:#fff;padding:8px 16px;border-radius:20px;font-size:.95rem;font-weight:600}
 /* GRID (VISUOSPATIAL) */
-.vgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:280px;margin:20px auto}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:20px auto}
 .vgrid-cell{aspect-ratio:1;border-radius:10px;background:#E8EEF4;border:2px solid #C5D3DF;cursor:pointer;transition:all .2s}
 .vgrid-cell.lit{background:var(--blue);border-color:var(--dark);transform:scale(1.06)}
 .vgrid-cell.hit{background:var(--green)}
@@ -80,6 +80,8 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
 .digit-btns{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
 .digit-btns button{padding:14px;font-size:1.2rem;font-weight:700;border:2px solid #E0E6ED;border-radius:10px;cursor:pointer;background:#fff;transition:all .15s}
 .digit-btns button:hover{background:var(--lblue);border-color:var(--blue)}
+.big-display{font-size:5rem;font-weight:900;text-align:center;padding:28px 0;color:var(--dark);letter-spacing:8px;min-height:120px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--lblue),#fff);border-radius:16px;margin:16px 0;border:2px solid var(--blue)}
+.big-display.flash{background:linear-gradient(135deg,#651FFF,#18FFFF);color:#fff;transform:scale(1.05);transition:all .15s}
 /* STROOP */
 .stroop-word{font-size:3.5rem;font-weight:900;text-align:center;padding:30px;min-height:110px;display:flex;align-items:center;justify-content:center;letter-spacing:4px}
 .color-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0}
@@ -759,24 +761,24 @@ function b3BuildGrid(id,clickable){
   const g=document.getElementById(id); g.innerHTML='';
   for(let i=0;i<9;i++){
     const c=document.createElement('div');
-    c.className='b3-cell'; c.dataset.idx=i;
+    c.className='vgrid-cell'; c.dataset.idx=i;
     if(clickable) c.onclick=()=>b3CellClick(i,c);
     g.appendChild(c);
   }
 }
 function b3Highlight(step){
-  const cells=document.querySelectorAll('#b3-grid .b3-cell');
-  cells.forEach(c=>c.classList.remove('active'));
+  const cells=document.querySelectorAll('#b3-grid .vgrid-cell');
+  cells.forEach(c=>c.classList.remove('lit'));
   if(step<b3State.seq.length){
-    cells[b3State.seq[step]].classList.add('active');
-    setTimeout(()=>{ cells[b3State.seq[step]].classList.remove('active'); setTimeout(()=>b3Highlight(step+1),300); },700);
+    cells[b3State.seq[step]].classList.add('lit');
+    setTimeout(()=>{ cells[b3State.seq[step]].classList.remove('lit'); setTimeout(()=>b3Highlight(step+1),300); },700);
   } else { showPhase('b3-','input'); }
 }
 function b3CellClick(idx,cell){
   if(b3State.userSeq.length>=b3State.seq.length) return;
   b3State.userSeq.push(idx);
-  cell.classList.add('active');
-  setTimeout(()=>cell.classList.remove('active'),400);
+  cell.classList.add('lit');
+  setTimeout(()=>cell.classList.remove('lit'),350);
   if(b3State.userSeq.length===b3State.seq.length) setTimeout(b3CheckSeq,500);
 }
 function b3CheckSeq(){
