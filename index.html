@@ -477,6 +477,11 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
 
 <script>
 // ─── ESTADO GLOBAL ────────────────────────────────────────────────────────────
+// ─── GOOGLE SHEETS INTEGRATION ───────────────────────────────────────────────
+// Pega aquí la URL de tu Google Apps Script Web App:
+const APPS_SCRIPT_URL = 'PEGA_TU_URL_AQUI';
+// ─────────────────────────────────────────────────────────────────────────────
+
 const state = {
   name: '', age: 0, email: '',
   aAnswers: {}, // moduleKey+qIdx → value
@@ -1130,7 +1135,7 @@ function cNext(){
     return;
   }
   if(cCurrent<cQuestions.length-1){ cCurrent++; renderC(); }
-  else{ calculateScores(); renderResults(); showScreen('s-results'); updateProgress(100,'Diagnóstico completado'); }
+  else{ calculateScores(); renderResults(); sendResultsToSheets(); showScreen('s-results'); updateProgress(100,'Diagnóstico completado'); }
 }
 function cPrev(){ if(cCurrent>0){ cCurrent--; renderC(); } }
 </script>
@@ -1171,6 +1176,30 @@ function calculateScores(){
 }
 
 // ─── RENDERIZAR RESULTADOS ─────────────────────────────────────────────────────
+function sendResultsToSheets(){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL==='PEGA_TU_URL_AQUI') return;
+  const payload={
+    name: state.name,
+    email: state.email,
+    age: state.age,
+    ibt: state.ibt||0,
+    b1: state.bScores.b1||0,
+    b2: state.bScores.b2||0,
+    b3: state.bScores.b3||0,
+    b4: state.bScores.b4||0,
+    b5: state.bScores.b5||0,
+    b6: state.bScores.b6||0,
+    ppm: state.bRaw && state.bRaw.ppm ? state.bRaw.ppm : (b6State ? b6State.ppm : 0),
+    cScore: state.cScore||0
+  };
+  fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).catch(err=>console.warn('Sheets send failed:',err));
+}
+
 function renderResults(){
   try {
   const rn=document.getElementById('result-name'); if(rn) rn.textContent='Resultados de '+state.name;
