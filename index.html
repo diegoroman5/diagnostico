@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico Cognitivo-Lector | Evolucione</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#0D0036;--blue:#651FFF;--lblue:#EDE7FF;
+  --green:#00C9A7;--yellow:#FFA111;--red:#F34D47;--orange:#FF0C99;
+  --bg:#F2EFFF;--white:#fff;--text:#1A0A5E;--light:#9B8EC4;
+  --cyan:#18FFFF;--purple2:#630762;
+  --radius:14px;--shadow:0 4px 24px rgba(13,0,54,.18)
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.screen.active{display:flex}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px;max-width:680px;width:100%}
+h1{color:var(--dark);font-size:2rem;line-height:1.2;margin-bottom:12px}
+h2{color:var(--blue);font-size:1.4rem;margin-bottom:16px}
+h3{color:var(--dark);font-size:1.1rem;margin-bottom:10px}
+p{color:var(--text);line-height:1.7;margin-bottom:12px}
+.subtitle{color:var(--light);font-size:.95rem}
+.tag{display:inline-block;background:#EDE7FF;color:#651FFF;padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:600;margin-bottom:16px}
+/* PROGRESS */
+#progress-wrap{position:fixed;top:0;left:0;right:0;z-index:100;height:5px;background:#ddd}
+#progress-bar{height:5px;background:linear-gradient(90deg,var(--blue),#4ECDC4);transition:width .4s ease;width:0}
+/* BUTTONS */
+.btn{display:inline-block;padding:14px 32px;border-radius:50px;font-size:1rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--dark));color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(46,117,182,.4)}
+.btn-secondary{background:var(--lblue);color:var(--blue)}
+.btn-sm{padding:10px 22px;font-size:.9rem}
+.btn-center{text-align:center;margin-top:24px}
+/* QUESTIONS */
+.q-label{font-size:1.15rem;font-weight:600;color:var(--dark);margin-bottom:24px;line-height:1.5}
+.q-sub{font-size:.85rem;color:var(--light);margin-bottom:20px}
+.q-counter{font-size:.82rem;font-weight:600;color:var(--blue);margin-bottom:6px}
+.options{display:flex;flex-direction:column;gap:10px}
+.opt{padding:14px 20px;border:2px solid #E0E6ED;border-radius:10px;cursor:pointer;transition:all .18s;font-size:.95rem;display:flex;align-items:center;gap:12px}
+.opt:hover{border-color:var(--blue);background:#F0F7FF}
+.opt.selected{border-color:var(--blue);background:var(--lblue);font-weight:600}
+.opt .badge{min-width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.opt.selected .badge{background:var(--dark)}
+/* MODULE HEADER */
+.module-hdr{background:linear-gradient(135deg,#0D0036,#651FFF);color:#fff;padding:16px 20px;border-radius:10px;margin-bottom:24px}
+.module-hdr h3{color:#fff;margin:0 0 4px}
+.module-hdr p{color:rgba(255,255,255,.8);font-size:.82rem;margin:0}
+/* TASK SCREENS */
+.task-title{font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.big-display{background:var(--dark);color:#fff;border-radius:var(--radius);padding:40px;text-align:center;margin:20px 0;min-height:120px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:700;letter-spacing:8px}
+.numpad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.numpad button{padding:14px 4px;border:2px solid #E0E6ED;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;background:#fff;transition:all .15s;color:var(--dark)}
+.numpad button:hover{border-color:var(--blue);background:var(--lblue)}
+.numpad button.del{background:#FEF2F2;color:var(--red);border-color:#FECACA}
+.numpad button.ok{background:var(--blue);color:#fff;border-color:var(--blue)}
+.user-answer{min-height:56px;background:var(--lblue);border-radius:10px;padding:14px 20px;font-size:1.4rem;font-weight:700;letter-spacing:6px;color:var(--dark);text-align:center;margin-bottom:8px}
+/* WORD SPAN */
+.word-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:16px 0}
+.word-btn{padding:10px 18px;border:2px solid var(--blue);border-radius:24px;cursor:pointer;font-size:1rem;font-weight:600;background:#fff;color:var(--blue);transition:all .15s}
+.word-btn:hover{background:var(--lblue)}
+.word-btn.used{opacity:.35;cursor:not-allowed;background:#eee;border-color:#ccc;color:#aaa}
+.word-btn.selected{background:var(--blue);color:#fff}
+.word-sequence{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0;min-height:44px}
+.word-tag{background:var(--dark);color:#fff;padding:8px 16px;border-radius:20px;font-size:.95rem;font-weight:600}
+/* GRID (VISUOSPATIAL) */
+.vgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:280px;margin:20px auto}
+.vgrid-cell{aspect-ratio:1;border-radius:10px;background:#E8EEF4;border:2px solid #C5D3DF;cursor:pointer;transition:all .2s}
+.vgrid-cell.lit{background:var(--blue);border-color:var(--dark);transform:scale(1.06)}
+.vgrid-cell.hit{background:var(--green)}
+.vgrid-cell.miss{background:var(--red)}
+/* SDMT */
+.sdmt-key{display:grid;grid-template-columns:repeat(9,1fr);border:2px solid var(--blue);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.sdmt-pair{display:flex;flex-direction:column;align-items:center;padding:8px 4px;border-right:1px solid #C5D3DF}
+.sdmt-pair:last-child{border-right:none}
+.sdmt-pair .sym{font-size:1.2rem;font-weight:700;color:var(--dark);background:var(--lblue);width:100%;text-align:center;padding:6px 0}
+.sdmt-pair .dig{font-size:1.1rem;font-weight:700;color:var(--blue);padding:6px 0}
+.sdmt-target{font-size:5rem;text-align:center;font-weight:700;color:var(--dark);padding:16px;min-height:100px}
+.digit-btns{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.digit-btns button{padding:14px;font-size:1.2rem;font-weight:700;border:2px solid #E0E6ED;border-radius:10px;cursor:pointer;background:#fff;transition:all .15s}
+.digit-btns button:hover{background:var(--lblue);border-color:var(--blue)}
+/* STROOP */
+.stroop-word{font-size:3.5rem;font-weight:900;text-align:center;padding:30px;min-height:110px;display:flex;align-items:center;justify-content:center;letter-spacing:4px}
+.color-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0}
+.color-btns button{padding:16px;font-size:1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all .15s}
+.color-btns button:hover{transform:scale(1.03)}
+/* TIMER */
+.timer-box{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.timer-num{font-size:1.6rem;font-weight:900;color:var(--dark)}
+.timer-bar-wrap{flex:1;height:8px;background:#E0E6ED;border-radius:4px;margin:0 16px;overflow:hidden}
+.timer-bar-fill{height:8px;background:linear-gradient(90deg,var(--green),var(--yellow));border-radius:4px;transition:width .5s linear}
+.score-live{font-size:1.1rem;font-weight:700;color:var(--blue)}
+/* READING */
+.reading-box{background:#FAFBFF;border:1px solid var(--lblue);border-radius:12px;padding:24px;line-height:1.9;font-size:.98rem;max-height:360px;overflow-y:auto;margin-bottom:20px}
+.reading-box p{margin-bottom:14px}
+/* RESULTS */
+.results-hdr{background:linear-gradient(135deg,var(--dark),var(--blue));color:#fff;padding:30px 40px;border-radius:var(--radius) var(--radius) 0 0;margin:-40px -40px 30px}
+.results-hdr h1{color:#fff;font-size:1.6rem}
+.results-hdr p{color:rgba(255,255,255,.8);margin:0;font-size:.9rem}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
+.score-card{border-radius:12px;padding:18px;text-align:center;border:2px solid transparent}
+.score-card.green{background:#F0FDF4;border-color:#86EFAC}
+.score-card.yellow{background:#FFFBEB;border-color:#FDE68A}
+.score-card.red{background:#FEF2F2;border-color:#FECACA}
+.score-card .val{font-size:2rem;font-weight:900;margin-bottom:4px}
+.score-card .lbl{font-size:.75rem;font-weight:600;color:var(--light);text-transform:uppercase;letter-spacing:.5px}
+.score-card.green .val{color:var(--green)}
+.score-card.yellow .val{color:var(--yellow)}
+.score-card.red .val{color:var(--red)}
+.radar-wrap{display:flex;justify-content:center;margin:16px 0}
+.ibt-bar-wrap{background:#E0E6ED;border-radius:20px;height:18px;overflow:hidden;margin:10px 0}
+.ibt-bar{height:18px;border-radius:20px;transition:width 1s ease}
+.rec-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #F2EFFF}
+.rec-item:last-child{border-bottom:none}
+.rec-dot{min-width:10px;height:10px;border-radius:50%;margin-top:6px}
+.section-divider{text-align:center;color:var(--light);font-size:.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin:24px 0 16px;display:flex;align-items:center;gap:10px}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:#E0E6ED}
+.feedback-msg{text-align:center;font-size:1.2rem;font-weight:700;padding:10px;border-radius:10px;margin:10px 0}
+.feedback-msg.correct{background:#F0FDF4;color:var(--green)}
+.feedback-msg.wrong{background:#FEF2F2;color:var(--red)}
+@media(max-width:600px){
+  .card{padding:24px}
+  .score-grid{grid-template-columns:1fr 1fr}
+  .sdmt-key{grid-template-columns:repeat(9,1fr)}
+  .sdmt-pair .sym,.sdmt-pair .dig{font-size:.85rem}
+  h1{font-size:1.5rem}
+  .big-display{font-size:2.2rem}
+}
+</style>
+</head>
+<body>
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<!-- ========== WELCOME ========== -->
+<div class="screen active" id="s-welcome">
+<div class="card" style="text-align:center;max-width:560px">
+  <div style="margin-bottom:20px">
+    <div style="margin:0 auto 10px;filter:drop-shadow(0 0 12px #651FFF88)">
+      <svg width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#651FFF"/><stop offset="100%" style="stop-color:#18FFFF"/></linearGradient></defs><ellipse cx="50" cy="52" rx="26" ry="26" fill="url(#pg)"/><ellipse cx="50" cy="52" rx="43" ry="11" fill="none" stroke="url(#pg)" stroke-width="5" transform="rotate(-20 50 52)"/><path d="M73 16 L74.5 21 L79.5 22.5 L74.5 24 L73 29 L71.5 24 L66.5 22.5 L71.5 21 Z" fill="#18FFFF"/><path d="M24 10 L25 13 L28 14 L25 15 L24 18 L23 15 L20 14 L23 13 Z" fill="#651FFF"/><path d="M82 62 L83 65 L86 66 L83 67 L82 70 L81 67 L78 66 L81 65 Z" fill="#18FFFF" opacity="0.8"/></svg>
+    </div>
+    <div style="font-size:1.6rem;font-weight:900;letter-spacing:3px;background:linear-gradient(90deg,#651FFF,#18FFFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1">EVOLUCIONE</div>
+    <div style="font-size:.65rem;letter-spacing:2.5px;color:#9B8EC4;margin-bottom:6px">TU UNIVERSO DE APRENDIZAJE</div>
+  </div>
+  <h1>Diagnóstico Cognitivo-Lector</h1>
+  <p class="subtitle" style="font-size:1rem;margin:12px 0 28px">Descubre el estado real de tu rendimiento cognitivo-lector en el trabajo. Recibirás un perfil personalizado con recomendaciones concretas.</p>
+  <div style="background:#F8FAFF;border-radius:12px;padding:16px;margin-bottom:28px;text-align:left">
+    <p style="font-size:.88rem;color:var(--light);margin:0">⏱ <strong>20–25 minutos</strong> &nbsp;|&nbsp; 📋 <strong>3 secciones</strong> &nbsp;|&nbsp; 🔒 <strong>Tus datos son confidenciales</strong></p>
+  </div>
+  <div style="margin-bottom:20px">
+    <label style="font-size:.9rem;font-weight:600;color:var(--dark);display:block;margin-bottom:8px">¿Cómo te llamas?</label>
+    <input id="user-name" type="text" placeholder="Escribe tu nombre" style="width:100%;padding:12px 16px;border:2px solid #E0E6ED;border-radius:10px;font-size:1rem;outline:none;font-family:inherit" onfocus="this.style.borderColor='#651FFF'" onblur="this.style.borderColor='#E0E6ED'">
+  </div>
+  <div style="margin-bottom:24px">
+    <label style="font-size:.9rem;font-weight:600;color:var(--dark);display:block;margin-bottom:8px">Rango de edad</label>
+    <select id="user-age" style="width:100%;padding:12px 16px;border:2px solid #E0E6ED;border-radius:10px;font-size:1rem;outline:none;font-family:inherit;background:#fff">
+      <option value="">Selecciona...</option>
+      <option value="20-29">20 – 29 años</option>
+      <option value="30-39">30 – 39 años</option>
+      <option value="40-49">40 – 49 años</option>
+      <option value="50+">50 años o más</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" style="width:100%;padding:16px" onclick="startDiagnostic()">Comenzar mi diagnóstico →</button>
+  <p style="font-size:.75rem;color:var(--light);margin-top:16px">Este instrumento es una ayuda diagnóstica y no sustituye una evaluación clínica formal.</p>
+</div>
+</div>
+
+<!-- ========== SECTION A ========== -->
+<div class="screen" id="s-a">
+<div class="card">
+  <div id="a-module-hdr" class="module-hdr"></div>
+  <div id="a-q-counter" class="q-counter"></div>
+  <div id="a-q-label" class="q-label"></div>
+  <div id="a-q-sub" class="q-sub"></div>
+  <div id="a-options" class="options"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
+    <button class="btn btn-secondary btn-sm" id="a-prev-btn" onclick="aPrev()">← Anterior</button>
+    <span id="a-progress-text" style="font-size:.82rem;color:var(--light)"></span>
+    <button class="btn btn-primary btn-sm" id="a-next-btn" onclick="aNext()">Siguiente →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== B INTRO ========== -->
+<div class="screen" id="s-b-intro">
+<div class="card" style="text-align:center">
+  <div style="font-size:3rem;margin-bottom:16px">⚡</div>
+  <h2>Sección B — Tareas Cognitivas</h2>
+  <p>Ahora realizarás <strong>6 tareas interactivas</strong> que miden tu rendimiento cognitivo objetivo. Cada tarea tiene instrucciones propias.</p>
+  <div style="background:#FFF8E1;border:1px solid #FDE68A;border-radius:10px;padding:16px;margin:20px 0;text-align:left">
+    <p style="margin:0;font-size:.9rem">⚠ <strong>Importante:</strong> Busca un lugar tranquilo, sin interrupciones. Algunas tareas son cronometradas. Trabaja tan rápido y preciso como puedas.</p>
+  </div>
+  <button class="btn btn-primary" onclick="showScreen('s-b1');startB1()">Comenzar tareas →</button>
+</div>
+</div>
+
+<!-- ========== B1 — DIGIT SPAN ========== -->
+<div class="screen" id="s-b1">
+<div class="card">
+  <div class="task-title">TAREA 1 DE 6 — Memoria de Trabajo</div>
+  <h2>Span de Dígitos</h2>
+  <div id="b1-phase-instructions">
+    <p>Verás una secuencia de números, uno a la vez. Cuando terminen, escríbelos en el <strong>mismo orden</strong>.</p>
+    <p>Primero <strong>orden directo</strong>, luego <strong>orden inverso</strong> (al revés).</p>
+    <div class="btn-center"><button class="btn btn-primary" onclick="b1StartTrial()">Empezar →</button></div>
+  </div>
+  <div id="b1-phase-show" style="display:none">
+    <p id="b1-showing-label" style="text-align:center;color:var(--light);font-size:.9rem">Memoriza los números...</p>
+    <div class="big-display" id="b1-display">–</div>
+  </div>
+  <div id="b1-phase-input" style="display:none">
+    <p id="b1-input-label" style="text-align:center;font-size:.95rem;margin-bottom:8px">Escribe los números que recuerdas:</p>
+    <div class="user-answer" id="b1-user-ans"></div>
+    <div class="numpad">
+      <button onclick="b1Input('1')">1</button><button onclick="b1Input('2')">2</button><button onclick="b1Input('3')">3</button><button onclick="b1Input('4')">4</button><button onclick="b1Input('5')">5</button>
+      <button onclick="b1Input('6')">6</button><button onclick="b1Input('7')">7</button><button onclick="b1Input('8')">8</button><button onclick="b1Input('9')">9</button><button onclick="b1Input('0')">0</button>
+      <button class="del" style="grid-column:span 2" onclick="b1Delete()">⌫ Borrar</button>
+      <button class="ok" style="grid-column:span 3" onclick="b1Submit()">✓ Confirmar</button>
+    </div>
+  </div>
+  <div id="b1-phase-feedback" style="display:none">
+    <div id="b1-fb-msg" class="feedback-msg"></div>
+    <p id="b1-fb-info" style="text-align:center;color:var(--light);font-size:.88rem"></p>
+  </div>
+  <div id="b1-phase-done" style="display:none;text-align:center">
+    <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Tarea completada</p>
+    <p id="b1-score-msg" style="color:var(--light);font-size:.9rem;margin-bottom:20px"></p>
+    <button class="btn btn-primary" onclick="showScreen('s-b2');startB2()">Siguiente tarea →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== B2 — WORD SPAN ========== -->
+<div class="screen" id="s-b2">
+<div class="card">
+  <div class="task-title">TAREA 2 DE 6 — Memoria Fonológica</div>
+  <h2>Span de Palabras</h2>
+  <div id="b2-phase-instructions">
+    <p>Verás palabras, una a la vez. Cuando terminen, toca las palabras en el <strong>mismo orden</strong> en que aparecieron.</p>
+    <div class="btn-center"><button class="btn btn-primary" onclick="b2StartTrial()">Empezar →</button></div>
+  </div>
+  <div id="b2-phase-show" style="display:none">
+    <p style="text-align:center;color:var(--light);font-size:.9rem">Memoriza las palabras...</p>
+    <div class="big-display" id="b2-display" style="font-size:2.2rem;letter-spacing:4px">–</div>
+  </div>
+  <div id="b2-phase-input" style="display:none">
+    <p style="text-align:center;font-size:.95rem;margin-bottom:4px">Toca las palabras en el orden correcto:</p>
+    <div class="word-sequence" id="b2-selected"></div>
+    <div class="word-grid" id="b2-options"></div>
+    <div class="btn-center"><button class="btn btn-primary btn-sm" onclick="b2Submit()">✓ Confirmar</button></div>
+  </div>
+  <div id="b2-phase-feedback" style="display:none">
+    <div id="b2-fb-msg" class="feedback-msg"></div>
+    <p id="b2-fb-info" style="text-align:center;color:var(--light);font-size:.88rem"></p>
+  </div>
+  <div id="b2-phase-done" style="display:none;text-align:center">
+    <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Tarea completada</p>
+    <p id="b2-score-msg" style="color:var(--light);font-size:.9rem;margin-bottom:20px"></p>
+    <button class="btn btn-primary" onclick="showScreen('s-b3');startB3()">Siguiente tarea →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== B3 — VISUOSPATIAL ========== -->
+<div class="screen" id="s-b3">
+<div class="card">
+  <div class="task-title">TAREA 3 DE 6 — Memoria Visoespacial</div>
+  <h2>Matrices Visoespaciales</h2>
+  <div id="b3-phase-instructions">
+    <p>Verás una cuadrícula. Algunas celdas se iluminarán en secuencia. Luego, toca las mismas celdas en el <strong>mismo orden</strong>.</p>
+    <div class="vgrid" id="b3-demo-grid"></div>
+    <div class="btn-center"><button class="btn btn-primary" onclick="b3StartTrial()">Empezar →</button></div>
+  </div>
+  <div id="b3-phase-show" style="display:none">
+    <p id="b3-show-label" style="text-align:center;color:var(--light);font-size:.9rem;margin-bottom:4px">Observa la secuencia...</p>
+    <div class="vgrid" id="b3-grid"></div>
+  </div>
+  <div id="b3-phase-input" style="display:none">
+    <p style="text-align:center;font-size:.95rem;margin-bottom:4px">¡Ahora toca las celdas en el mismo orden!</p>
+    <div style="text-align:center;font-size:.88rem;color:var(--light);margin-bottom:8px" id="b3-input-progress"></div>
+    <div class="vgrid" id="b3-input-grid"></div>
+  </div>
+  <div id="b3-phase-feedback" style="display:none">
+    <div id="b3-fb-msg" class="feedback-msg"></div>
+    <p id="b3-fb-info" style="text-align:center;color:var(--light);font-size:.88rem"></p>
+  </div>
+  <div id="b3-phase-done" style="display:none;text-align:center">
+    <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Tarea completada</p>
+    <p id="b3-score-msg" style="color:var(--light);font-size:.9rem;margin-bottom:20px"></p>
+    <button class="btn btn-primary" onclick="showScreen('s-b4');startB4()">Siguiente tarea →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== B4 — SDMT ========== -->
+<div class="screen" id="s-b4">
+<div class="card">
+  <div class="task-title">TAREA 4 DE 6 — Velocidad de Procesamiento</div>
+  <h2>Sustitución Símbolo-Dígito</h2>
+  <div id="b4-phase-instructions">
+    <p>Arriba verás 9 pares <strong>símbolo → número</strong>. Abajo aparecerá un símbolo. Toca el número que le corresponde, tan rápido como puedas. Tienes <strong>90 segundos</strong>.</p>
+    <div class="sdmt-key" id="b4-key-preview"></div>
+    <div class="btn-center"><button class="btn btn-primary" onclick="b4StartPractice()">Practicar primero →</button></div>
+  </div>
+  <div id="b4-phase-active" style="display:none">
+    <div class="timer-box">
+      <span id="b4-timer" class="timer-num">90</span>
+      <div class="timer-bar-wrap"><div class="timer-bar-fill" id="b4-tbar" style="width:100%"></div></div>
+      <span id="b4-score-live" class="score-live">0 ✓</span>
+    </div>
+    <div class="sdmt-key" id="b4-key"></div>
+    <div class="sdmt-target" id="b4-symbol"></div>
+    <div class="digit-btns" id="b4-digit-btns"></div>
+    <p id="b4-mode-label" style="text-align:center;font-size:.82rem;color:var(--light)"></p>
+  </div>
+  <div id="b4-phase-done" style="display:none;text-align:center">
+    <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Tarea completada</p>
+    <p id="b4-score-msg" style="color:var(--light);font-size:.9rem;margin-bottom:20px"></p>
+    <button class="btn btn-primary" onclick="showScreen('s-b5');startB5()">Siguiente tarea →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== B5 — STROOP ========== -->
+<div class="screen" id="s-b5">
+<div class="card">
+  <div class="task-title">TAREA 5 DE 6 — Función Ejecutiva</div>
+  <h2>Stroop Color-Palabra</h2>
+  <div id="b5-phase-instructions">
+    <p>Verás una <strong>palabra</strong> escrita en un <strong>color diferente</strong> a su significado. Debes tocar el <strong>color de la tinta</strong> (NO lo que dice la palabra).</p>
+    <div style="text-align:center;padding:16px;background:#F8FAFF;border-radius:12px;margin:16px 0">
+      <span style="font-size:2.5rem;font-weight:900;color:#F34D47">AZUL</span>
+      <p style="font-size:.88rem;color:var(--light);margin-top:8px">La tinta es roja → respuesta correcta: <strong>ROJO</strong></p>
+    </div>
+    <p style="font-size:.88rem">Primero harás un <strong>ensayo de práctica</strong>, luego la prueba real de <strong>45 segundos</strong>.</p>
+    <div class="btn-center"><button class="btn btn-primary" onclick="b5Start('practice')">Practicar →</button></div>
+  </div>
+  <div id="b5-phase-active" style="display:none">
+    <div id="b5-timer-box" class="timer-box">
+      <span id="b5-timer" class="timer-num">45</span>
+      <div class="timer-bar-wrap"><div class="timer-bar-fill" id="b5-tbar" style="width:100%"></div></div>
+      <span id="b5-score-live" class="score-live">0 ✓</span>
+    </div>
+    <div class="stroop-word" id="b5-word"></div>
+    <div class="color-btns">
+      <button style="background:#F34D47;color:#fff" onclick="b5Answer('ROJO')">ROJO</button>
+      <button style="background:#2980B9;color:#fff" onclick="b5Answer('AZUL')">AZUL</button>
+      <button style="background:#00C9A7;color:#fff" onclick="b5Answer('VERDE')">VERDE</button>
+      <button style="background:#F1C40F;color:#333" onclick="b5Answer('AMARILLO')">AMARILLO</button>
+    </div>
+    <p id="b5-mode-label" style="text-align:center;font-size:.82rem;color:var(--light)"></p>
+  </div>
+  <div id="b5-phase-test-start" style="display:none;text-align:center">
+    <p style="font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:8px">¡Práctica completada!</p>
+    <p id="b5-practice-score" style="color:var(--light);margin-bottom:20px"></p>
+    <p>Ahora la prueba real: <strong>45 segundos</strong>. ¡Tan rápido y preciso como puedas!</p>
+    <div class="btn-center" style="margin-top:20px"><button class="btn btn-primary" onclick="b5Start('test')">Comenzar prueba →</button></div>
+  </div>
+  <div id="b5-phase-done" style="display:none;text-align:center">
+    <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Tarea completada</p>
+    <p id="b5-score-msg" style="color:var(--light);font-size:.9rem;margin-bottom:20px"></p>
+    <button class="btn btn-primary" onclick="showScreen('s-b6');startB6()">Siguiente tarea →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== B6 — READING ========== -->
+<div class="screen" id="s-b6">
+<div class="card">
+  <div class="task-title">TAREA 6 DE 6 — Comprensión Lectora</div>
+  <h2>Lectura Aplicada</h2>
+  <div id="b6-phase-reading">
+    <p style="font-size:.88rem;color:var(--light);margin-bottom:12px">Lee el siguiente texto. Cuando termines, toca el botón. El tiempo se registra automáticamente.</p>
+    <div class="reading-box">
+      <p><strong>La sobrecarga de información en el entorno laboral</strong></p>
+      <p>En las últimas dos décadas, el volumen de información que un profesional promedio debe procesar se ha multiplicado exponencialmente. Estudios realizados por la Universidad de California en San Diego estiman que el trabajador del conocimiento consume aproximadamente 34 gigabytes de información al día, equivalente a 100,500 palabras fuera del entorno laboral; cifra que dentro del trabajo puede ser significativamente mayor.</p>
+      <p>Esta realidad genera lo que los investigadores denominan "fatiga cognitiva acumulada": un estado en el que la capacidad del cerebro para seleccionar, retener y procesar información relevante disminuye de forma progresiva a lo largo de la jornada. El fenómeno no es exclusivo de personas con bajo rendimiento; al contrario, afecta con mayor frecuencia a profesionales altamente comprometidos que intentan mantenerse al día con una demanda de información que excede la capacidad biológica de atención sostenida.</p>
+      <p>La consecuencia más silenciosa de este proceso es la lectura superficial: el profesional avanza por el texto, llega al final del documento y descubre que no puede recordar ni resumir lo que acaba de leer. No es un problema de inteligencia ni de motivación; es el resultado predecible de intentar leer con un sistema cognitivo al que nunca se le enseñó a gestionar eficientemente la carga de información contemporánea.</p>
+      <p>La buena noticia es que la neuroplasticidad —la capacidad del cerebro para reorganizarse y crear nuevas conexiones neuronales— permanece activa en adultos sanos. Investigaciones en neurociencia cognitiva demuestran que la práctica sistemática de estrategias de lectura activa puede mejorar la velocidad de procesamiento en un 40–60% y la retención de información en un 30–50% en periodos de entrenamiento de 6 a 12 semanas.</p>
+    </div>
+    <div class="btn-center"><button class="btn btn-primary" onclick="b6FinishReading()">Terminé de leer →</button></div>
+  </div>
+  <div id="b6-phase-questions" style="display:none">
+    <div id="b6-q-counter" class="q-counter"></div>
+    <div id="b6-q-text" class="q-label"></div>
+    <div id="b6-q-options" class="options"></div>
+  </div>
+  <div id="b6-phase-done" style="display:none;text-align:center">
+    <p style="font-size:1.1rem;color:var(--green);font-weight:700;margin-bottom:8px">✓ Sección B completada</p>
+    <p id="b6-score-msg" style="color:var(--light);font-size:.9rem;margin-bottom:20px"></p>
+    <button class="btn btn-primary" onclick="showScreen('s-c');renderC(0)">Continuar a Sección C →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== SECTION C ========== -->
+<div class="screen" id="s-c">
+<div class="card">
+  <div class="module-hdr">
+    <h3>SECCIÓN C — Metacognición y Estrategias</h3>
+    <p>Instrumento base: MARSI (Mokhtari y Reichard, 2002) adaptado para contexto laboral</p>
+  </div>
+  <div id="c-q-counter" class="q-counter"></div>
+  <div id="c-q-label" class="q-label"></div>
+  <div id="c-options" class="options"></div>
+  <div style="display:flex;justify-content:space-between;margin-top:24px">
+    <button class="btn btn-secondary btn-sm" id="c-prev-btn" onclick="cPrev()">← Anterior</button>
+    <button class="btn btn-primary btn-sm" id="c-next-btn" onclick="cNext()">Siguiente →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== RESULTS ========== -->
+<div class="screen" id="s-results">
+<div class="card" id="results-card">
+  <div class="results-hdr">
+    <h1 id="res-title">Tu Perfil Cognitivo-Lector</h1>
+    <p id="res-subtitle"></p>
+  </div>
+
+  <div class="section-divider">Índice de Bienestar Laboral</div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span id="ibt-label" style="font-weight:700;font-size:1.1rem"></span>
+    <span id="ibt-score" style="font-size:2rem;font-weight:900"></span>
+  </div>
+  <div class="ibt-bar-wrap"><div class="ibt-bar" id="ibt-bar"></div></div>
+  <p id="ibt-text" style="font-size:.88rem;color:var(--light);margin-top:8px"></p>
+
+  <div class="section-divider">Perfil Cognitivo — Batería B</div>
+  <div class="radar-wrap"><canvas id="radar-canvas" width="300" height="300"></canvas></div>
+  <div class="score-grid" id="b-score-grid"></div>
+
+  <div class="section-divider">Perfil Metacognitivo — Sección C</div>
+  <div id="c-result-card" style="border-radius:12px;padding:16px;margin-bottom:8px"></div>
+
+  <div class="section-divider">Plan de Acción Personalizado</div>
+  <div id="recommendations"></div>
+
+  <div style="margin-top:28px;text-align:center">
+    <button class="btn btn-secondary btn-sm" onclick="window.print()" style="margin-right:10px">🖨 Imprimir informe</button>
+    <button class="btn btn-primary btn-sm" onclick="location.reload()">Repetir diagnóstico</button>
+  </div>
+  <p style="font-size:.72rem;color:var(--light);text-align:center;margin-top:16px">Este diagnóstico es una ayuda orientativa y no sustituye una evaluación clínica formal. Evolucione © 2026<br><span style="font-size:.68rem">Informe generado para: <span id="result-email-footer"></span></span></p>
+</div>
+</div>
+
+
+<script>
+// ─── ESTADO GLOBAL ────────────────────────────────────────────────────────────
+const state = {
+  name: '', age: 0, email: '',
+  aAnswers: {}, // moduleKey+qIdx → value
+  bScores: { b1:null, b2:null, b3:null, b4:null, b5:null, b6:null },
+  bRaw:    { b1:0, b2:0, b3:0, b4:0, b5:0, b6:0 },
+  cAnswers: [],
+  readingStartTime: 0
+};
+
+// ─── NAVEGACIÓN ───────────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function updateProgress(pct, label){
+  document.getElementById('progress-bar').style.width = pct+'%';
+  document.getElementById('progress-label').textContent = label;
+}
+function showPhase(taskPrefix, phase){
+  document.querySelectorAll('[id^="'+taskPrefix+'phase-"]').forEach(el=>el.style.display='none');
+  const el = document.getElementById(taskPrefix+'phase-'+phase);
+  if(el) el.style.display='';
+}
+
+// ─── DATOS SECCIÓN A ──────────────────────────────────────────────────────────
+const aModules = [
+  { key:'sleep', title:'Módulo 1 — Calidad del Sueño', sub:'Responde según tu experiencia de las últimas 2 semanas', questions:[
+    { label:'¿Cuántas horas de sueño obtienes en promedio por noche?', options:['Menos de 5 horas (0)','5–6 horas (1)','6–7 horas (2)','7–8 horas (3)','Más de 8 horas (2)'], values:[0,1,2,3,2] },
+    { label:'¿Con qué frecuencia sientes que tu sueño fue reparador?', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] },
+    { label:'¿Con qué frecuencia tardas más de 30 minutos en quedarte dormido?', options:['Nunca (4)','1–2 veces/sem (3)','3–4 veces/sem (2)','5–6 veces/sem (1)','Todos los días (0)'], values:[4,3,2,1,0] }
+  ]},
+  { key:'burnout', title:'Módulo 2 — Bienestar Laboral (Burnout)', sub:'Piensa en tu trabajo de los últimos 30 días', questions:[
+    { label:'Me siento emocionalmente agotado por mi trabajo.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'Me siento "vaciado" al final de la jornada laboral.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'Me siento fatigado cuando me levanto y tengo que ir al trabajo.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'Trabajar todo el día es realmente un esfuerzo para mí.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'Puedo solucionar eficazmente los problemas que surgen.', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] },
+    { label:'Siento que estoy contribuyendo positivamente a mi organización.', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] }
+  ]},
+  { key:'physical', title:'Módulo 3 — Bienestar Físico', sub:'Hábitos físicos recientes', questions:[
+    { label:'¿Con qué frecuencia realizas actividad física moderada o intensa?', options:['Nunca (0)','1 vez/sem (1)','2–3 veces/sem (2)','4–5 veces/sem (3)','Todos los días (4)'], values:[0,1,2,3,4] },
+    { label:'¿Cómo describes tu alimentación habitual?', options:['Muy desordenada (0)','Irregular (1)','Moderada (2)','Bastante balanceada (3)','Muy balanceada (4)'], values:[0,1,2,3,4] },
+    { label:'¿Consumes cafeína o energizantes para mantenerte activo?', options:['4+ veces al día (0)','2–3 veces al día (1)','1 vez al día (2)','Ocasionalmente (3)','Casi nunca (4)'], values:[0,1,2,3,4] }
+  ]},
+  { key:'cognitive', title:'Módulo 4 — Carga Cognitiva', sub:'Piensa en el último mes', questions:[
+    { label:'¿Con qué frecuencia sientes que tienes demasiadas cosas en mente al mismo tiempo?', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'¿Qué tan difícil te resulta concentrarte en una sola tarea por 25+ minutos?', options:['Muy fácil (4)','Fácil (3)','Regular (2)','Difícil (1)','Muy difícil (0)'], values:[4,3,2,1,0] }
+  ]},
+  { key:'social', title:'Módulo 5 — Soporte Social', sub:'Entorno de apoyo', questions:[
+    { label:'¿Tienes personas con quienes hablar cuando enfrentas problemas laborales?', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] },
+    { label:'¿Sientes que tu entorno laboral valora tu bienestar?', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] },
+    { label:'¿Tienes autonomía para organizar tu trabajo a tu manera?', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] }
+  ]}
+];
+
+// ─── SECCIÓN A — LÓGICA ───────────────────────────────────────────────────────
+let aFlat = []; // {moduleKey, moduleTitle, moduleSub, qIdx, label, options, values}
+aModules.forEach(m => m.questions.forEach((q,i)=> aFlat.push({...q, moduleKey:m.key, moduleTitle:m.title, moduleSub:m.sub, qIdx:i}) ));
+let aCurrent = 0;
+
+function startDiagnostic(){
+  const n = document.getElementById('user-name').value.trim();
+  const ageVal = document.getElementById('user-age').value;
+  const e = document.getElementById('user-email').value.trim();
+  if(!n){ alert('Por favor ingresa tu nombre.'); return; }
+  if(!ageVal){ alert('Por favor selecciona tu rango de edad.'); return; }
+  if(!e || !e.includes('@')){ alert('Por favor ingresa un correo electrónico válido.'); return; }
+  state.name = n; state.age = ageVal; state.email = e;
+  aCurrent = 0;
+  renderA();
+  showScreen('s-a');
+  updateProgress(5,'Sección A — Bienestar Integral');
+}
+
+function renderA(){
+  const q = aFlat[aCurrent];
+  const total = aFlat.length;
+  document.getElementById('a-module-hdr').textContent = q.moduleTitle;
+  document.getElementById('a-q-label').textContent = (aCurrent+1)+'. '+q.label;
+  document.getElementById('a-q-sub').textContent = q.moduleSub;
+  document.getElementById('a-q-counter').textContent = (aCurrent+1)+' / '+total;
+  document.getElementById('a-progress-text').textContent = Math.round((aCurrent/total)*100)+'% completado';
+
+  const key = q.moduleKey+'_'+q.qIdx;
+  const saved = state.aAnswers[key];
+  const container = document.getElementById('a-options');
+  container.innerHTML = '';
+  q.options.forEach((opt, i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (saved===i?' selected':'');
+    btn.textContent = opt;
+    btn.onclick = ()=>{ state.aAnswers[key]=i; renderA(); };
+    container.appendChild(btn);
+  });
+  document.getElementById('a-prev-btn').style.display = aCurrent===0?'none':'';
+  document.getElementById('a-next-btn').textContent = aCurrent===total-1?'Continuar →':'Siguiente →';
+  updateProgress(5 + Math.round((aCurrent/total)*25), 'Sección A — '+(aCurrent+1)+'/'+total);
+}
+
+function aNext(){
+  const q = aFlat[aCurrent];
+  const key = q.moduleKey+'_'+q.qIdx;
+  if(state.aAnswers[key]===undefined){ alert('Por favor selecciona una respuesta.'); return; }
+  if(aCurrent < aFlat.length-1){ aCurrent++; renderA(); }
+  else{ showScreen('s-b-intro'); updateProgress(30,'Batería B — Tareas Cognitivas'); }
+}
+function aPrev(){ if(aCurrent>0){ aCurrent--; renderA(); } }
+
+// ─── B1 DIGIT SPAN ────────────────────────────────────────────────────────────
+const b1Seqs = {
+  4: [['6','1','9','3'],['4','8','2','7']],
+  5: [['7','3','9','1','5'],['2','8','4','6','3']],
+  6: [['9','2','6','4','1','7'],['3','7','5','8','2','4']],
+  7: [['4','1','8','3','9','6','2'],['7','5','2','8','1','4','9']],
+  8: [['3','9','1','7','5','2','8','4'],['6','2','9','3','7','1','5','8']],
+  9: [['1','5','8','2','6','9','3','7','4'],['8','4','2','7','3','5','1','9','6']],
+  10:[['5','3','7','1','9','4','8','2','6','3'],['2','8','4','6','1','7','3','9','5','4']]
+};
+let b1State = { len:4, trial:0, correctAt:{}, phase:'instructions', showIdx:0, digits:[], userAns:'' };
+
+function startB1(){
+  b1State = { len:4, trial:0, correctAt:{}, phase:'instructions', showIdx:0, digits:[], userAns:'' };
+  showPhase('b1-','instructions');
+  showScreen('s-b1');
+  updateProgress(33,'B1 — Memoria de Dígitos');
+}
+function b1Begin(){
+  b1State.digits = b1Seqs[b1State.len][b1State.trial];
+  b1State.showIdx = 0; b1State.userAns='';
+  document.getElementById('b1-user-ans').textContent='';
+  showPhase('b1-','show');
+  b1ShowNext();
+}
+function b1ShowNext(){
+  const d = document.getElementById('b1-display');
+  if(b1State.showIdx < b1State.digits.length){
+    d.textContent = b1State.digits[b1State.showIdx];
+    d.className = 'digit-display flash';
+    setTimeout(()=>{ d.className='digit-display'; b1State.showIdx++; setTimeout(b1ShowNext,300); },800);
+  } else {
+    d.textContent='?';
+    showPhase('b1-','input');
+  }
+}
+function b1Digit(v){ b1State.userAns+=v; document.getElementById('b1-user-ans').textContent=b1State.userAns.split('').join(' '); }
+function b1Delete(){ b1State.userAns=b1State.userAns.slice(0,-1); document.getElementById('b1-user-ans').textContent=b1State.userAns.split('').join(' '); }
+function b1Submit(){
+  const correct = b1State.digits.join('')===b1State.userAns;
+  if(!b1State.correctAt[b1State.len]) b1State.correctAt[b1State.len]=0;
+  if(correct) b1State.correctAt[b1State.len]++;
+  const fb = document.getElementById('b1-fb-msg');
+  fb.textContent = correct ? '✅ ¡Correcto!' : '❌ Secuencia incorrecta. La correcta era: '+b1State.digits.join(' ');
+  fb.style.color = correct?'var(--green)':'var(--red)';
+  showPhase('b1-','feedback');
+  setTimeout(()=>{ b1NextTrial(correct); }, 1400);
+}
+function b1NextTrial(wasCorrect){
+  b1State.trial++;
+  if(b1State.trial<2){ b1Begin(); return; }
+  // after 2 trials at this length
+  const score = b1State.correctAt[b1State.len]||0;
+  if(score===0 || b1State.len>=10){ b1Done(); return; }
+  b1State.len++; b1State.trial=0; b1Begin();
+}
+function b1Done(){
+  // max span = highest len where at least 1 correct
+  let span=3;
+  for(let L=4;L<=10;L++){ if((b1State.correctAt[L]||0)>0) span=L; }
+  state.bRaw.b1 = span;
+  const norm = Math.max(0,Math.min(100, Math.round((span-4)/6*100)));
+  state.bScores.b1 = norm;
+  document.getElementById('b1-score-msg').textContent = 'Tu span máximo: '+span+' dígitos | Puntuación normalizada: '+norm+'/100';
+  showPhase('b1-','done');
+}
+
+// ─── B2 WORD SPAN ─────────────────────────────────────────────────────────────
+const b2WordBank = ['MESA','LIBRO','CASA','ÁRBOL','COCHE','PUERTA','LLUVIA','PERRO','SILLA','MANO','NUBE','LLAVE','CAMPO','FARO','VELA'];
+const b2Seqs = {
+  3:[['LIBRO','CASA','MESA'],['ÁRBOL','PERRO','SILLA']],
+  4:[['COCHE','ÁRBOL','LIBRO','LLAVE'],['MESA','NUBE','SILLA','VELA']],
+  5:[['LIBRO','PUERTA','ÁRBOL','COCHE','MANO'],['LLUVIA','MESA','LLAVE','PERRO','NUBE']],
+  6:[['ÁRBOL','VELA','COCHE','LLAVE','MESA','LLUVIA'],['SILLA','LIBRO','FARO','PERRO','PUERTA','CAMPO']],
+  7:[['COCHE','LLAVE','ÁRBOL','VELA','SILLA','NUBE','LIBRO'],['CAMPO','PERRO','MESA','LLUVIA','FARO','MANO','PUERTA']]
+};
+let b2State = { len:3, trial:0, correctAt:{}, wordList:[], selected:[], phase:'instructions', showIdx:0 };
+
+function startB2(){
+  b2State = { len:3, trial:0, correctAt:{}, wordList:[], selected:[], phase:'instructions', showIdx:0 };
+  showPhase('b2-','instructions');
+  showScreen('s-b2');
+  updateProgress(41,'B2 — Memoria de Palabras');
+}
+function b2Begin(){
+  b2State.wordList = b2Seqs[b2State.len][b2State.trial];
+  b2State.showIdx=0; b2State.selected=[];
+  document.getElementById('b2-selected').textContent='(ninguna aún)';
+  showPhase('b2-','show');
+  b2ShowNext();
+}
+function b2ShowNext(){
+  const d = document.getElementById('b2-display');
+  if(b2State.showIdx < b2State.wordList.length){
+    d.textContent = b2State.wordList[b2State.showIdx];
+    b2State.showIdx++;
+    setTimeout(b2ShowNext, 1000);
+  } else {
+    d.textContent='';
+    b2BuildOptions();
+    showPhase('b2-','input');
+  }
+}
+function b2BuildOptions(){
+  const needed = b2State.wordList;
+  const distractors = b2WordBank.filter(w=>!needed.includes(w)).sort(()=>Math.random()-.5).slice(0,4);
+  const all = [...needed,...distractors].sort(()=>Math.random()-.5);
+  const container = document.getElementById('b2-options');
+  container.innerHTML='';
+  all.forEach(w=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn';
+    btn.textContent=w;
+    btn.onclick=()=>b2Toggle(btn,w);
+    container.appendChild(btn);
+  });
+}
+function b2Toggle(btn,w){
+  const idx=b2State.selected.indexOf(w);
+  if(idx>=0){ b2State.selected.splice(idx,1); btn.classList.remove('selected'); }
+  else{ b2State.selected.push(w); btn.classList.add('selected'); }
+  document.getElementById('b2-selected').textContent = b2State.selected.length ? b2State.selected.join(', ') : '(ninguna)';
+}
+function b2Submit(){
+  const correct = b2State.wordList.every(w=>b2State.selected.includes(w)) && b2State.selected.length===b2State.wordList.length;
+  if(!b2State.correctAt[b2State.len]) b2State.correctAt[b2State.len]=0;
+  if(correct) b2State.correctAt[b2State.len]++;
+  const fb=document.getElementById('b2-fb-msg');
+  fb.textContent = correct ? '✅ ¡Correcto!' : '❌ La secuencia era: '+b2State.wordList.join(' → ');
+  fb.style.color = correct?'var(--green)':'var(--red)';
+  showPhase('b2-','feedback');
+  setTimeout(()=>{
+    b2State.trial++;
+    if(b2State.trial<2){ b2Begin(); return; }
+    const s=b2State.correctAt[b2State.len]||0;
+    if(s===0||b2State.len>=7){ b2Done(); return; }
+    b2State.len++; b2State.trial=0; b2Begin();
+  },1400);
+}
+function b2Done(){
+  let span=2;
+  for(let L=3;L<=7;L++){ if((b2State.correctAt[L]||0)>0) span=L; }
+  state.bRaw.b2=span;
+  const norm=Math.max(0,Math.min(100,Math.round((span-3)/4*100)));
+  state.bScores.b2=norm;
+  document.getElementById('b2-score-msg').textContent='Tu span máximo: '+span+' palabras | Puntuación: '+norm+'/100';
+  showPhase('b2-','done');
+}
+
+// ─── B3 VISUOSPATIAL ──────────────────────────────────────────────────────────
+const b3Seqs={
+  3:[[0,4,8],[2,5,6]],
+  4:[[1,3,7,5],[0,6,2,8]],
+  5:[[2,4,6,0,8],[3,1,7,5,4]],
+  6:[[0,2,8,6,4,1],[7,3,5,1,6,2]],
+  7:[[1,5,3,7,0,8,6],[2,4,6,0,5,3,8]],
+  8:[[0,3,6,1,8,5,2,7],[4,1,7,3,6,0,8,5]]
+};
+let b3State={len:3,trial:0,correctAt:{},seq:[],userSeq:[],phase:'instructions'};
+
+function startB3(){
+  b3State={len:3,trial:0,correctAt:{},seq:[],userSeq:[],phase:'instructions'};
+  showPhase('b3-','instructions');
+  showScreen('s-b3');
+  updateProgress(49,'B3 — Memoria Visuoespacial');
+}
+function b3Begin(){
+  b3State.seq=b3Seqs[b3State.len][b3State.trial];
+  b3State.userSeq=[];
+  b3BuildGrid('b3-grid',false);
+  b3BuildGrid('b3-input-grid',true);
+  showPhase('b3-','show');
+  b3Highlight(0);
+}
+function b3BuildGrid(id,clickable){
+  const g=document.getElementById(id); g.innerHTML='';
+  for(let i=0;i<9;i++){
+    const c=document.createElement('div');
+    c.className='b3-cell'; c.dataset.idx=i;
+    if(clickable) c.onclick=()=>b3CellClick(i,c);
+    g.appendChild(c);
+  }
+}
+function b3Highlight(step){
+  const cells=document.querySelectorAll('#b3-grid .b3-cell');
+  cells.forEach(c=>c.classList.remove('active'));
+  if(step<b3State.seq.length){
+    cells[b3State.seq[step]].classList.add('active');
+    setTimeout(()=>{ cells[b3State.seq[step]].classList.remove('active'); setTimeout(()=>b3Highlight(step+1),300); },700);
+  } else { showPhase('b3-','input'); }
+}
+function b3CellClick(idx,cell){
+  if(b3State.userSeq.length>=b3State.seq.length) return;
+  b3State.userSeq.push(idx);
+  cell.classList.add('active');
+  setTimeout(()=>cell.classList.remove('active'),400);
+  if(b3State.userSeq.length===b3State.seq.length) setTimeout(b3CheckSeq,500);
+}
+function b3CheckSeq(){
+  const correct=b3State.seq.every((v,i)=>b3State.userSeq[i]===v);
+  if(!b3State.correctAt[b3State.len]) b3State.correctAt[b3State.len]=0;
+  if(correct) b3State.correctAt[b3State.len]++;
+  const fb=document.getElementById('b3-fb-msg');
+  fb.textContent=correct?'✅ ¡Correcto!':'❌ Secuencia incorrecta.';
+  fb.style.color=correct?'var(--green)':'var(--red)';
+  showPhase('b3-','feedback');
+  setTimeout(()=>{
+    b3State.trial++;
+    if(b3State.trial<2){ b3Begin(); return; }
+    const s=b3State.correctAt[b3State.len]||0;
+    if(s===0||b3State.len>=8){ b3Done(); return; }
+    b3State.len++; b3State.trial=0; b3Begin();
+  },1400);
+}
+function b3Done(){
+  let span=2;
+  for(let L=3;L<=8;L++){ if((b3State.correctAt[L]||0)>0) span=L; }
+  state.bRaw.b3=span;
+  const norm=Math.max(0,Math.min(100,Math.round((span-3)/5*100)));
+  state.bScores.b3=norm;
+  document.getElementById('b3-score-msg').textContent='Tu span máximo: '+span+' celdas | Puntuación: '+norm+'/100';
+  showPhase('b3-','done');
+}
+</script>
+
+<script>
+// ─── B4 SDMT ──────────────────────────────────────────────────────────────────
+const b4Key = {'=':1,'@':2,'#':3,'%':4,'&':5,'?':6,'>':7,'~':8,'+':9,'→':0};
+const b4Symbols = Object.keys(b4Key);
+let b4State={correct:0,total:0,timer:null,timeLeft:90,mode:'practice',practiceIdx:0,practicing:true};
+
+function startB4(){
+  b4State={correct:0,total:0,timer:null,timeLeft:90,mode:'practice',practiceIdx:0,practicing:true};
+  // Build key display
+  const keyDiv=document.getElementById('b4-key');
+  keyDiv.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:1rem">'
+    +'<tr>'+b4Symbols.map(s=>'<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:1.1rem"><b>'+s+'</b></td>').join('')+'</tr>'
+    +'<tr>'+b4Symbols.map(s=>'<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;color:var(--blue)"><b>'+b4Key[s]+'</b></td>').join('')+'</tr>'
+    +'</table>';
+  // Build digit buttons
+  const btns=document.getElementById('b4-digit-btns');
+  btns.innerHTML='';
+  for(let i=0;i<=9;i++){
+    const b=document.createElement('button');
+    b.className='digit-btn'; b.textContent=i;
+    b.onclick=()=>b4Answer(i);
+    btns.appendChild(b);
+  }
+  b4NextSymbol();
+  showScreen('s-b4');
+  updateProgress(57,'B4 — Velocidad de Procesamiento (SDMT)');
+}
+function b4NextSymbol(){
+  const sym=b4Symbols[Math.floor(Math.random()*b4Symbols.length)];
+  document.getElementById('b4-symbol').textContent=sym;
+  document.getElementById('b4-symbol').dataset.sym=sym;
+}
+function b4StartTest(){
+  b4State.practicing=false; b4State.correct=0; b4State.total=0; b4State.timeLeft=90;
+  document.getElementById('b4-score-live').textContent='0';
+  document.getElementById('b4-timer').textContent='90s';
+  document.getElementById('b4-tbar').style.width='100%';
+  b4State.timer=setInterval(()=>{
+    b4State.timeLeft--;
+    const pct=Math.round(b4State.timeLeft/90*100);
+    document.getElementById('b4-timer').textContent=b4State.timeLeft+'s';
+    document.getElementById('b4-tbar').style.width=pct+'%';
+    document.getElementById('b4-tbar').style.background=b4State.timeLeft>30?'var(--blue)':b4State.timeLeft>10?'var(--yellow)':'var(--red)';
+    if(b4State.timeLeft<=0){ clearInterval(b4State.timer); b4Done(); }
+  },1000);
+  b4NextSymbol();
+  document.getElementById('b4-start-btn').style.display='none';
+  document.getElementById('b4-digit-btns').style.pointerEvents='';
+}
+function b4Answer(digit){
+  const sym=document.getElementById('b4-symbol').dataset.sym;
+  if(b4State.practicing){
+    const correct=b4Key[sym]===digit;
+    document.getElementById('b4-score-live').textContent=correct?'✅':'❌ (era '+b4Key[sym]+')';
+    setTimeout(()=>{ document.getElementById('b4-score-live').textContent=''; b4NextSymbol(); },700);
+    return;
+  }
+  b4State.total++;
+  if(b4Key[sym]===digit) b4State.correct++;
+  document.getElementById('b4-score-live').textContent=b4State.correct;
+  b4NextSymbol();
+}
+function b4Done(){
+  clearInterval(b4State.timer);
+  const raw=b4State.correct;
+  state.bRaw.b4=raw;
+  const norm=Math.max(0,Math.min(100,Math.round((raw/50)*100)));
+  state.bScores.b4=norm;
+  document.getElementById('b4-score-msg').textContent='Respuestas correctas: '+raw+' / '+b4State.total+' | Puntuación: '+norm+'/100';
+  showPhase('b4-','done');
+  document.getElementById('b4-digit-btns').style.pointerEvents='none';
+}
+
+// ─── B5 STROOP ────────────────────────────────────────────────────────────────
+const b5Colors=[
+  {word:'ROJO',ink:'red'},{word:'AZUL',ink:'blue'},{word:'VERDE',ink:'green'},{word:'AMARILLO',ink:'orange'},
+  {word:'ROJO',ink:'blue'},{word:'AZUL',ink:'green'},{word:'VERDE',ink:'red'},{word:'AMARILLO',ink:'red'},
+  {word:'ROJO',ink:'orange'},{word:'AZUL',ink:'red'},{word:'VERDE',ink:'orange'},{word:'AMARILLO',ink:'green'}
+];
+const b5ColorMap={red:'ROJO',blue:'AZUL',green:'VERDE',orange:'AMARILLO'};
+let b5State={correct:0,total:0,timer:null,timeLeft:45,practicing:true,practiceRound:0};
+
+function startB5(){
+  b5State={correct:0,total:0,timer:null,timeLeft:45,practicing:true,practiceRound:0};
+  b5NextWord();
+  showScreen('s-b5');
+  updateProgress(65,'B5 — Control Inhibitorio (Stroop)');
+}
+function b5NextWord(){
+  const item=b5Colors[Math.floor(Math.random()*b5Colors.length)];
+  const el=document.getElementById('b5-word');
+  el.textContent=item.word; el.style.color=item.ink; el.dataset.ink=item.ink;
+  document.getElementById('b5-score-live').textContent=b5State.practicing?'Práctica':'Correctas: '+b5State.correct;
+}
+function b5StartTest(){
+  b5State.practicing=false; b5State.correct=0; b5State.total=0; b5State.timeLeft=45;
+  document.getElementById('b5-timer').textContent='45s';
+  document.getElementById('b5-tbar').style.width='100%';
+  b5State.timer=setInterval(()=>{
+    b5State.timeLeft--;
+    const pct=Math.round(b5State.timeLeft/45*100);
+    document.getElementById('b5-timer').textContent=b5State.timeLeft+'s';
+    document.getElementById('b5-tbar').style.width=pct+'%';
+    document.getElementById('b5-tbar').style.background=b5State.timeLeft>15?'var(--blue)':b5State.timeLeft>5?'var(--yellow)':'var(--red)';
+    if(b5State.timeLeft<=0){ clearInterval(b5State.timer); b5Done(); }
+  },1000);
+  document.getElementById('b5-start-btn').style.display='none';
+  b5NextWord();
+}
+function b5Answer(colorName){
+  const ink=document.getElementById('b5-word').dataset.ink;
+  const correct=b5ColorMap[ink]===colorName;
+  if(!b5State.practicing){
+    b5State.total++;
+    if(correct) b5State.correct++;
+    document.getElementById('b5-score-live').textContent='Correctas: '+b5State.correct;
+  } else {
+    document.getElementById('b5-score-live').textContent=correct?'✅ Correcto':'❌ Era '+b5ColorMap[ink];
+    b5State.practiceRound++;
+    if(b5State.practiceRound>=4){ document.getElementById('b5-start-btn').style.display=''; }
+  }
+  b5NextWord();
+}
+function b5Done(){
+  clearInterval(b5State.timer);
+  const raw=b5State.correct;
+  state.bRaw.b5=raw;
+  const norm=Math.max(0,Math.min(100,Math.round((raw/30)*100)));
+  state.bScores.b5=norm;
+  document.getElementById('b5-score-msg').textContent='Respuestas correctas: '+raw+' / '+b5State.total+' | Puntuación: '+norm+'/100';
+  showPhase('b5-','done');
+}
+
+// ─── B6 COMPRENSIÓN LECTORA ────────────────────────────────────────────────────
+const b6Questions=[
+  { q:'¿Cuál es el argumento principal del texto sobre la memoria de trabajo?',
+    opts:['Es irrelevante para el aprendizaje','Es el núcleo central del aprendizaje y la cognición','Solo afecta la memoria a largo plazo','Es innata e inmutable'],
+    ans:1 },
+  { q:'¿Qué componente de la memoria de trabajo procesa la información verbal?',
+    opts:['Ejecutivo central','Lazo fonológico','Agenda visuoespacial','Búfer episódico'],
+    ans:1 },
+  { q:'Según el texto, ¿qué ocurre cuando la memoria de trabajo se sobrecarga?',
+    opts:['Mejora la comprensión','El procesamiento se vuelve menos eficiente','Aumenta la velocidad de lectura','Se activa la memoria a largo plazo automáticamente'],
+    ans:1 },
+  { q:'¿Qué estrategia propone el texto para reducir la carga cognitiva?',
+    opts:['Leer más rápido siempre','Dividir información compleja en fragmentos manejables','Evitar la relectura','Estudiar por más tiempo sin descanso'],
+    ans:1 },
+  { q:'¿Cómo define el texto la relación entre velocidad de lectura y comprensión?',
+    opts:['Son completamente independientes','Mayor velocidad siempre implica menor comprensión','Existe un equilibrio óptimo personal entre ambas','La velocidad no importa, solo la comprensión'],
+    ans:2 },
+  { q:'¿Qué implicación práctica destaca el texto para profesionales?',
+    opts:['Deben leer menos material','Deben entrenar la memoria de trabajo y gestionar la carga cognitiva','Deben evitar lecturas técnicas','Solo importa la cantidad de material leído'],
+    ans:1 }
+];
+let b6State={qIdx:0,answers:[],ppm:0,readStart:0};
+
+function startB6(){
+  b6State={qIdx:0,answers:[],ppm:0,readStart:Date.now()};
+  document.getElementById('b6-phase-reading').style.display='';
+  document.getElementById('b6-phase-questions').style.display='none';
+  document.getElementById('b6-phase-done').style.display='none';
+  showScreen('s-b6');
+  updateProgress(73,'B6 — Comprensión Lectora');
+}
+function b6FinishReading(){
+  const elapsed=(Date.now()-b6State.readStart)/1000/60; // minutos
+  const wordCount=250;
+  b6State.ppm=Math.round(wordCount/elapsed);
+  document.getElementById('b6-phase-reading').style.display='none';
+  document.getElementById('b6-phase-questions').style.display='';
+  b6RenderQ();
+}
+function b6RenderQ(){
+  const q=b6Questions[b6State.qIdx];
+  document.getElementById('b6-q-counter').textContent='Pregunta '+(b6State.qIdx+1)+' de '+b6Questions.length;
+  document.getElementById('b6-q-text').textContent=q.q;
+  const container=document.getElementById('b6-q-options'); container.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn'; btn.textContent=opt;
+    btn.onclick=()=>b6Answer(i);
+    container.appendChild(btn);
+  });
+}
+function b6Answer(i){
+  b6State.answers.push(i);
+  b6State.qIdx++;
+  if(b6State.qIdx<b6Questions.length){ b6RenderQ(); }
+  else { b6Done(); }
+}
+function b6Done(){
+  const correct=b6State.answers.filter((a,i)=>a===b6Questions[i].ans).length;
+  const raw=correct; state.bRaw.b6=raw;
+  const compScore=Math.round(correct/b6Questions.length*100);
+  const ppmScore=Math.max(0,Math.min(100,Math.round((b6State.ppm-100)/4)));
+  const norm=Math.round(compScore*0.7+ppmScore*0.3);
+  state.bScores.b6=Math.max(0,Math.min(100,norm));
+  document.getElementById('b6-phase-questions').style.display='none';
+  document.getElementById('b6-phase-done').style.display='';
+  document.getElementById('b6-score-msg').textContent=
+    'Comprensión: '+correct+'/'+b6Questions.length+' respuestas correctas | Velocidad: '+b6State.ppm+' PPM | Puntuación: '+state.bScores.b6+'/100';
+}
+
+// ─── SECCIÓN C ────────────────────────────────────────────────────────────────
+const cQuestions=[
+  { label:'Antes de leer un texto extenso, me pregunto qué sé sobre el tema y qué quiero aprender.',
+    options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
+  { label:'Mientras leo, me doy cuenta cuando un párrafo no tiene sentido y vuelvo a leerlo.',
+    options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
+  { label:'Después de leer, hago un resumen mental de los puntos clave del texto.',
+    options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
+  { label:'Ajusto mi velocidad de lectura según la dificultad del texto.',
+    options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
+  { label:'Cuando no entiendo algo, tengo estrategias claras para resolverlo (buscar, releer, preguntar).',
+    options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
+  { label:'Reflexiono sobre si realmente comprendí lo que leí antes de pasar al siguiente texto.',
+    options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] }
+];
+let cCurrent=0;
+
+function startC(){
+  cCurrent=0; state.cAnswers=[];
+  renderC();
+  showScreen('s-c');
+  updateProgress(83,'Sección C — Metacognición');
+}
+function renderC(){
+  const q=cQuestions[cCurrent];
+  document.getElementById('c-q-counter').textContent=(cCurrent+1)+' / '+cQuestions.length;
+  document.getElementById('c-q-label').textContent=(cCurrent+1)+'. '+q.label;
+  document.getElementById('c-progress-text').textContent=Math.round((cCurrent/cQuestions.length)*100)+'% completado';
+  const saved=state.cAnswers[cCurrent];
+  const container=document.getElementById('c-options'); container.innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn'+(saved===i?' selected':'');
+    btn.textContent=opt;
+    btn.onclick=()=>{ state.cAnswers[cCurrent]=i; renderC(); };
+    container.appendChild(btn);
+  });
+  document.getElementById('c-prev-btn').style.display=cCurrent===0?'none':'';
+  document.getElementById('c-next-btn').textContent=cCurrent===cQuestions.length-1?'Ver mi diagnóstico →':'Siguiente →';
+  updateProgress(83+Math.round((cCurrent/cQuestions.length)*12),'Sección C — '+(cCurrent+1)+'/'+cQuestions.length);
+}
+function cNext(){
+  if(state.cAnswers[cCurrent]===undefined){ alert('Por favor selecciona una respuesta.'); return; }
+  if(cCurrent<cQuestions.length-1){ cCurrent++; renderC(); }
+  else{ calculateScores(); renderResults(); showScreen('s-results'); updateProgress(100,'Diagnóstico completado'); }
+}
+function cPrev(){ if(cCurrent>0){ cCurrent--; renderC(); } }
+</script>
+
+<script>
+// ─── CÁLCULO DE PUNTUACIONES ──────────────────────────────────────────────────
+function calculateScores(){
+  // IBT — Índice de Bienestar Total
+  let sleep=0, burnout=0, physical=0, social=0;
+  // Sleep: 3 qs, max 4+4+4=12 → but we have 0-3, 0-4, 0-4
+  const sKeys=['sleep_0','sleep_1','sleep_2'];
+  sKeys.forEach(k=>{ if(state.aAnswers[k]!==undefined){ const m=aModules.find(m=>m.key==='sleep'); sleep+=m.questions[parseInt(k.split('_')[1])].values[state.aAnswers[k]]||0; }});
+  // Burnout: 6 qs
+  const bMod=aModules.find(m=>m.key==='burnout');
+  for(let i=0;i<6;i++){
+    const k='burnout_'+i;
+    if(state.aAnswers[k]!==undefined) burnout+=bMod.questions[i].values[state.aAnswers[k]]||0;
+  }
+  // Physical: 3 qs
+  const pMod=aModules.find(m=>m.key==='physical');
+  for(let i=0;i<3;i++){
+    const k='physical_'+i;
+    if(state.aAnswers[k]!==undefined) physical+=pMod.questions[i].values[state.aAnswers[k]]||0;
+  }
+  // Social: 3 qs
+  const soMod=aModules.find(m=>m.key==='social');
+  for(let i=0;i<3;i++){
+    const k='social_'+i;
+    if(state.aAnswers[k]!==undefined) social+=soMod.questions[i].values[state.aAnswers[k]]||0;
+  }
+  const sleepMax=11, burnoutMax=24, physMax=12, socMax=12;
+  const ibt=Math.round((sleep/sleepMax)*30+(burnout/burnoutMax)*40+(physical/physMax)*20+(social/socMax)*10);
+  state.ibt=Math.max(0,Math.min(100,ibt));
+
+  // C score
+  const cRaw=state.cAnswers.reduce((acc,ans,i)=>acc+(cQuestions[i].values[ans]||0),0);
+  state.cScore=Math.round((cRaw/(cQuestions.length*4))*100);
+}
+
+// ─── RENDERIZAR RESULTADOS ─────────────────────────────────────────────────────
+function renderResults(){
+  document.getElementById('result-name').textContent='Resultados de '+state.name;
+  document.getElementById('result-email').textContent=state.email;
+  document.getElementById('result-age').textContent='Grupo etario: '+state.age+' años';
+
+  // IBT gauge
+  const ibt=state.ibt;
+  document.getElementById('ibt-bar').style.width=ibt+'%';
+  document.getElementById('ibt-bar').style.background=ibt>=60?'var(--green)':ibt>=40?'var(--yellow)':'var(--red)';
+  document.getElementById('ibt-score').textContent=ibt+'/100';
+  let ibtMsg='';
+  if(ibt>=75) ibtMsg='Bienestar óptimo. Tus condiciones fisiológicas y emocionales son favorables para el aprendizaje.';
+  else if(ibt>=60) ibtMsg='Bienestar adecuado. Algunas áreas presentan margen de mejora.';
+  else if(ibt>=40) ibtMsg='Bienestar moderado. Factores como sueño o estrés pueden estar limitando tu rendimiento cognitivo.';
+  else ibtMsg='Bienestar bajo. Atención: factores externos están probablemente afectando tu rendimiento. Prioriza tu bienestar antes de intensificar el entrenamiento cognitivo.';
+  document.getElementById('ibt-text').textContent=ibtMsg;
+
+  // Score cards grid
+  const taskNames=['Memoria de Dígitos','Memoria de Palabras','Memoria Visuoespacial','Velocidad Procesamiento','Control Inhibitorio','Comprensión Lectora'];
+  const taskKeys=['b1','b2','b3','b4','b5','b6'];
+  const taskIcons=['🔢','📝','🔲','⚡','🎨','📖'];
+  const grid=document.getElementById('b-score-grid');
+  grid.innerHTML='';
+  taskKeys.forEach((k,i)=>{
+    const sc=state.bScores[k]||0;
+    const color=sc>=60?'var(--green)':sc>=40?'var(--yellow)':'var(--red)';
+    const label=sc>=60?'Adecuado':sc>=40?'En desarrollo':'Área de atención';
+    const card=document.createElement('div');
+    card.className='score-card';
+    card.innerHTML=`<div style="font-size:1.5rem">${taskIcons[i]}</div>
+      <div style="font-size:.78rem;font-weight:600;color:var(--dark);margin:4px 0">${taskNames[i]}</div>
+      <div style="font-size:1.8rem;font-weight:700;color:${color}">${sc}</div>
+      <div style="font-size:.7rem;color:${color}">${label}</div>`;
+    grid.appendChild(card);
+  });
+
+  // Metacognición
+  const cSc=state.cScore;
+  const cCard=document.getElementById('c-result-card');
+  const cColor=cSc>=60?'#00C9A7':cSc>=40?'#FFA111':'#F34D47';
+  let cLabel=cSc>=75?'Metacognitor Experto':cSc>=60?'Metacognitor Activo':cSc>=40?'En Desarrollo':'Metacognición Básica';
+  let cDesc=cSc>=75?'Aplicas consistentemente estrategias de planificación, monitoreo y autorregulación lectora.':
+    cSc>=60?'Usas estrategias metacognitivas con regularidad. Hay oportunidad de hacerlo más sistemáticamente.':
+    cSc>=40?'Usas algunas estrategias metacognitivas. Desarrollar hábitos de planificación y monitoreo mejoraría tu comprensión.':
+    'Tus procesos de lectura son mayormente automáticos. Incorporar estrategias metacognitivas puede transformar tu comprensión.';
+  cCard.style.background=cColor+'22'; cCard.style.borderLeft='4px solid '+cColor;
+  cCard.innerHTML=`<div style="font-weight:700;color:${cColor};font-size:1.05rem">${cLabel} — ${cSc}/100</div><p style="margin:8px 0 0;font-size:.88rem;color:#333">${cDesc}</p>`;
+
+  // Radar chart
+  setTimeout(()=>drawRadarChart(), 100);
+
+  // Recomendaciones
+  renderRecommendations();
+}
+
+function drawRadarChart(){
+  const canvas=document.getElementById('radar-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  const cx=W/2, cy=H/2, R=Math.min(W,H)/2-30;
+  ctx.clearRect(0,0,W,H);
+  const labels=['Dígitos','Palabras','Visuo-\nespacial','Velocidad','Stroop','Comprens.'];
+  const keys=['b1','b2','b3','b4','b5','b6'];
+  const N=labels.length;
+  const angle=(i)=>(-Math.PI/2)+(2*Math.PI/N)*i;
+
+  // Grid rings
+  [20,40,60,80,100].forEach(pct=>{
+    ctx.beginPath();
+    for(let i=0;i<N;i++){
+      const r=R*pct/100, a=angle(i);
+      i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+    }
+    ctx.closePath();
+    ctx.strokeStyle=pct===50?'#651FFF88':'#ddd';
+    ctx.lineWidth=pct===50?2:1;
+    ctx.stroke();
+    ctx.fillStyle='#999'; ctx.font='9px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(pct, cx+2, cy-R*pct/100+3);
+  });
+
+  // Axes
+  for(let i=0;i<N;i++){
+    const a=angle(i);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));
+    ctx.strokeStyle='#ddd'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // Reference line (50%)
+  ctx.beginPath();
+  for(let i=0;i<N;i++){
+    const r=R*0.5, a=angle(i);
+    i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+  }
+  ctx.closePath(); ctx.strokeStyle='#651FFF88'; ctx.lineWidth=2; ctx.stroke();
+
+  // User polygon
+  ctx.beginPath();
+  keys.forEach((k,i)=>{
+    const sc=state.bScores[k]||0;
+    const r=R*sc/100, a=angle(i);
+    i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+  });
+  ctx.closePath();
+  ctx.fillStyle='rgba(39,174,96,0.25)';
+  ctx.strokeStyle='var(--green)';
+  ctx.lineWidth=2.5;
+  ctx.fill(); ctx.stroke();
+
+  // Dots & labels
+  keys.forEach((k,i)=>{
+    const sc=state.bScores[k]||0;
+    const r=R*sc/100, a=angle(i);
+    ctx.beginPath(); ctx.arc(cx+r*Math.cos(a),cy+r*Math.sin(a),4,0,Math.PI*2);
+    ctx.fillStyle='var(--green)'; ctx.fill();
+    const lr=R+22, la=angle(i);
+    ctx.fillStyle='#333'; ctx.font='bold 9.5px sans-serif'; ctx.textAlign='center';
+    const lx=cx+lr*Math.cos(la), ly=cy+lr*Math.sin(la);
+    const parts=labels[i].split('\n');
+    parts.forEach((p,pi)=>ctx.fillText(p,lx,ly+pi*11-((parts.length-1)*5)));
+  });
+}
+
+// ─── RECOMENDACIONES ──────────────────────────────────────────────────────────
+function renderRecommendations(){
+  const container=document.getElementById('recommendations');
+  const recs=[];
+  const scores=state.bScores;
+  const ibt=state.ibt;
+
+  if(ibt<60) recs.push({icon:'😴',title:'Prioridad: Bienestar Integral',text:'Tu IBT indica que factores como sueño, estrés o carga cognitiva pueden estar limitando tu rendimiento. Antes de intensificar el entrenamiento cognitivo, consolida hábitos de sueño, pausas activas y gestión del estrés.',color:'#F34D47'});
+  if((scores.b1||0)<50||(scores.b2||0)<50) recs.push({icon:'🧠',title:'Memoria de Trabajo — Refuerza el Lazo Fonológico',text:'Tu capacidad para retener y manipular información verbal es un área de desarrollo. Ejercicios como N-back verbal, lectura en voz alta con repetición espaciada y técnicas de chunking pueden fortalecer este sistema.',color:'#651FFF'});
+  if((scores.b3||0)<50) recs.push({icon:'🔲',title:'Memoria Visuoespacial — Entrena la Agenda Visual',text:'La retención de información espacial y visual tiene margen de mejora. Ejercicios como Corsi blocks digitales, mapas mentales y visualización activa durante la lectura pueden fortalecer este componente.',color:'#651FFF'});
+  if((scores.b4||0)<50) recs.push({icon:'⚡',title:'Velocidad de Procesamiento — Aumenta la Eficiencia',text:'Tu velocidad para procesar y codificar información puede mejorar. La práctica sistemática de lectura veloz con comprensión, ejercicios SDMT y técnicas de expansión del campo visual son clave.',color:'#FFA111'});
+  if((scores.b5||0)<50) recs.push({icon:'🎨',title:'Control Inhibitorio — Fortalece el Foco',text:'Tu capacidad para suprimir respuestas automáticas y mantener el foco tiene espacio de mejora. Mindfulness, técnicas Pomodoro y práctica de tareas con interferencia pueden fortalecer tu control ejecutivo.',color:'#FFA111'});
+  if((scores.b6||0)<50) recs.push({icon:'📖',title:'Comprensión Lectora — Estrategias Activas',text:'Tu comprensión y/o velocidad lectora están por debajo del rango óptimo para profesionales. Estrategias como lectura activa (SQ3R), anticipación de estructura y síntesis post-lectura pueden transformar tu rendimiento.',color:'#9B59B6'});
+  if(state.cScore<60) recs.push({icon:'🎯',title:'Metacognición — Haz Consciente tu Proceso',text:'Desarrollar hábitos metacognitivos (planificar antes, monitorear durante, reflexionar después) puede multiplicar el impacto de cualquier estrategia de lectura. Es una habilidad entrenable.',color:'#0D0036'});
+  if(recs.length===0) recs.push({icon:'🌟',title:'¡Perfil Cognitivo Sólido!',text:'Tus resultados muestran un perfil cognitivo bien desarrollado. Para seguir avanzando, enfócate en mantener tus hábitos de bienestar y practica estrategias avanzadas de lectura como la lectura diagonal y el método Cornell.',color:'var(--green)'});
+
+  container.innerHTML=recs.map(r=>`
+    <div style="border-left:4px solid ${r.color};background:${r.color}15;border-radius:8px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-weight:700;color:${r.color};margin-bottom:6px">${r.icon} ${r.title}</div>
+      <p style="font-size:.86rem;color:#333;margin:0">${r.text}</p>
+    </div>`).join('');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  updateProgress(0,'Inicio');
+});
+</script>
+</body>
+</html>
+
+<script>
+// ─── ALIASES / WRAPPERS para onclick del HTML ──────────────────────────────
+function b1StartTrial(){ b1Begin(); }
+function b1Input(v){ b1Digit(v); }
+function b2StartTrial(){ b2Begin(); }
+function b3StartTrial(){ b3Begin(); }
+function b4StartPractice(){ 
+  b4State.practicing=true;
+  document.getElementById('b4-start-btn').textContent='Comenzar prueba real →';
+  document.getElementById('b4-start-btn').onclick=b4StartTest;
+  document.getElementById('b4-start-btn').style.display='none';
+  // show practice panel
+  document.getElementById('b4-timer').textContent='Práctica';
+  document.getElementById('b4-score-live').textContent='Prueba: indica el número del símbolo';
+  document.getElementById('b4-digit-btns').style.pointerEvents='';
+  // Show start test button after 5 practice answers
+  const origAnswer=b4Answer;
+  let practiceCount=0;
+  b4Answer=function(digit){
+    const sym=document.getElementById('b4-symbol').dataset.sym;
+    const correct=b4Key[sym]===digit;
+    document.getElementById('b4-score-live').textContent=correct?'✅ Correcto':'❌ Era '+b4Key[sym];
+    practiceCount++;
+    b4NextSymbol();
+    if(practiceCount>=5){
+      document.getElementById('b4-start-btn').textContent='Comenzar prueba real (90 seg) →';
+      document.getElementById('b4-start-btn').onclick=b4StartTest;
+      document.getElementById('b4-start-btn').style.display='';
+      b4Answer=origAnswer; // restore
+    }
+    setTimeout(()=>{ document.getElementById('b4-score-live').textContent=''; },600);
+  };
+}
+function b5Start(mode){
+  if(mode==='practice'){
+    b5State.practicing=true; b5State.practiceRound=0;
+    document.getElementById('b5-start-btn').style.display='none';
+    b5NextWord();
+  } else {
+    b5StartTest();
+  }
+}
+</script>
