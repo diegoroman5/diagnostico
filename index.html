@@ -379,8 +379,20 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
 <div class="card">
   <div class="task-title">TAREA 6 DE 6 — Comprensión Lectora</div>
   <h2>Lectura Aplicada</h2>
-  <div id="b6-phase-reading">
-    <p style="font-size:.88rem;color:var(--light);margin-bottom:12px">Lee el siguiente texto. Cuando termines, toca el botón. El tiempo se registra automáticamente.</p>
+  <div id="b6-phase-start" style="text-align:center;padding:24px 0">
+    <p style="font-size:1rem;margin-bottom:8px">Lee el texto <strong>a tu ritmo habitual</strong> como lo harías en el trabajo.</p>
+    <p style="font-size:.88rem;color:var(--light);margin-bottom:20px">El cronómetro arranca cuando presiones el botón. Cuando termines de leer, presiona <strong>"Terminé de leer"</strong>.</p>
+    <div style="font-size:3rem;font-weight:900;color:var(--blue);margin:16px 0">📖</div>
+    <button class="btn btn-primary" onclick="b6BeginReading()">Comenzar a leer →</button>
+  </div>
+  <div id="b6-phase-reading" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <p style="font-size:.88rem;color:var(--light);margin:0">Lee a tu ritmo habitual</p>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--lblue);border-radius:20px;padding:6px 14px">
+        <span style="font-size:.8rem;color:var(--blue);font-weight:600">⏱</span>
+        <span id="b6-live-timer" style="font-size:1.1rem;font-weight:700;color:var(--dark);min-width:40px">0:00</span>
+      </div>
+    </div>
     <div class="reading-box">
       <p><strong>La sobrecarga de información en el entorno laboral</strong></p>
       <p>En las últimas dos décadas, el volumen de información que un profesional promedio debe procesar se ha multiplicado exponencialmente. Estudios realizados por la Universidad de California en San Diego estiman que el trabajador del conocimiento consume aproximadamente 34 gigabytes de información al día, equivalente a 100,500 palabras fuera del entorno laboral; cifra que dentro del trabajo puede ser significativamente mayor.</p>
@@ -388,7 +400,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
       <p>La consecuencia más silenciosa de este proceso es la lectura superficial: el profesional avanza por el texto, llega al final del documento y descubre que no puede recordar ni resumir lo que acaba de leer. No es un problema de inteligencia ni de motivación; es el resultado predecible de intentar leer con un sistema cognitivo al que nunca se le enseñó a gestionar eficientemente la carga de información contemporánea.</p>
       <p>La buena noticia es que la neuroplasticidad —la capacidad del cerebro para reorganizarse y crear nuevas conexiones neuronales— permanece activa en adultos sanos. Investigaciones en neurociencia cognitiva demuestran que la práctica sistemática de estrategias de lectura activa puede mejorar la velocidad de procesamiento en un 40–60% y la retención de información en un 30–50% en periodos de entrenamiento de 6 a 12 semanas.</p>
     </div>
-    <div class="btn-center"><button class="btn btn-primary" onclick="b6FinishReading()">Terminé de leer →</button></div>
+    <div class="btn-center" style="margin-top:16px"><button class="btn btn-primary" onclick="b6FinishReading()">Terminé de leer →</button></div>
   </div>
   <div id="b6-phase-questions" style="display:none">
     <div id="b6-q-counter" class="q-counter"></div>
@@ -411,6 +423,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
     <p>Instrumento base: MARSI (Mokhtari y Reichard, 2002) adaptado para contexto laboral</p>
   </div>
   <div id="c-q-counter" class="q-counter"></div>
+  <div id="c-progress-text" style="font-size:.78rem;color:var(--light);margin-bottom:4px"></div>
   <div id="c-q-label" class="q-label"></div>
   <div id="c-options" class="options"></div>
   <div style="display:flex;justify-content:space-between;margin-top:24px">
@@ -982,15 +995,32 @@ const b6Questions=[
 ];
 let b6State={qIdx:0,answers:[],ppm:0,readStart:0};
 
+let b6TimerInterval=null;
 function startB6(){
-  b6State={qIdx:0,answers:[],ppm:0,readStart:Date.now()};
-  document.getElementById('b6-phase-reading').style.display='';
+  b6State={qIdx:0,answers:[],ppm:0,readStart:0};
+  clearInterval(b6TimerInterval);
+  document.getElementById('b6-phase-start').style.display='';
+  document.getElementById('b6-phase-reading').style.display='none';
   document.getElementById('b6-phase-questions').style.display='none';
   document.getElementById('b6-phase-done').style.display='none';
   showScreen('s-b6');
   updateProgress(73,'B6 — Comprensión Lectora');
 }
+function b6BeginReading(){
+  b6State.readStart=Date.now();
+  document.getElementById('b6-phase-start').style.display='none';
+  document.getElementById('b6-phase-reading').style.display='';
+  // Live timer: update every second
+  clearInterval(b6TimerInterval);
+  b6TimerInterval=setInterval(()=>{
+    const secs=Math.floor((Date.now()-b6State.readStart)/1000);
+    const m=Math.floor(secs/60), s=secs%60;
+    const el=document.getElementById('b6-live-timer');
+    if(el) el.textContent=m+':'+(s<10?'0':'')+s;
+  },1000);
+}
 function b6FinishReading(){
+  clearInterval(b6TimerInterval);
   const elapsed=(Date.now()-b6State.readStart)/1000/60; // minutos
   const wordCount=250;
   b6State.ppm=Math.round(wordCount/elapsed);
