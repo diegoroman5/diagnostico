@@ -514,13 +514,29 @@ let aFlat = []; // {moduleKey, moduleTitle, moduleSub, qIdx, label, options, val
 aModules.forEach(m => m.questions.forEach((q,i)=> aFlat.push({...q, moduleKey:m.key, moduleTitle:m.title, moduleSub:m.sub, qIdx:i}) ));
 let aCurrent = 0;
 
+function showError(id, msg){
+  // Remove old errors
+  document.querySelectorAll('.field-error').forEach(e=>e.remove());
+  if(!msg) return;
+  const el = document.getElementById(id);
+  if(!el) return;
+  const err = document.createElement('p');
+  err.className = 'field-error';
+  err.style.cssText = 'color:#F34D47;font-size:.8rem;margin-top:4px;font-weight:600';
+  err.textContent = '⚠ ' + msg;
+  el.parentNode.insertBefore(err, el.nextSibling);
+  el.style.borderColor = '#F34D47';
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
 function startDiagnostic(){
   const n = document.getElementById('user-name').value.trim();
   const ageVal = document.getElementById('user-age').value;
-  const e = document.getElementById('user-email').value.trim();
-  if(!n){ alert('Por favor ingresa tu nombre.'); return; }
-  if(!ageVal){ alert('Por favor selecciona tu rango de edad.'); return; }
-  if(!e || !e.includes('@')){ alert('Por favor ingresa un correo electrónico válido.'); return; }
+  const e = (document.getElementById('user-email') ? document.getElementById('user-email').value.trim() : '');
+  document.querySelectorAll('.field-error').forEach(el=>el.remove());
+  if(!n){ showError('user-name','Por favor ingresa tu nombre.'); return; }
+  if(!ageVal){ showError('user-age','Por favor selecciona tu rango de edad.'); return; }
+  if(!e || !e.includes('@')){ showError('user-email','Por favor ingresa un correo electrónico válido.'); return; }
   state.name = n; state.age = ageVal; state.email = e;
   aCurrent = 0;
   renderA();
