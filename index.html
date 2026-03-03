@@ -440,6 +440,13 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
     <h1 id="res-title">Tu Perfil Cognitivo-Lector</h1>
     <p id="res-subtitle"></p>
   </div>
+  <div style="background:var(--lblue);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <span id="result-name" style="font-weight:700;color:var(--dark);font-size:1rem"></span>
+    <span style="color:var(--light);font-size:.8rem">·</span>
+    <span id="result-email" style="color:var(--blue);font-size:.85rem"></span>
+    <span style="color:var(--light);font-size:.8rem">·</span>
+    <span id="result-age" style="color:var(--light);font-size:.82rem"></span>
+  </div>
 
   <div class="section-divider">Índice de Bienestar Laboral</div>
   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
@@ -1165,9 +1172,10 @@ function calculateScores(){
 
 // ─── RENDERIZAR RESULTADOS ─────────────────────────────────────────────────────
 function renderResults(){
-  document.getElementById('result-name').textContent='Resultados de '+state.name;
-  document.getElementById('result-email').textContent=state.email;
-  document.getElementById('result-age').textContent='Grupo etario: '+state.age+' años';
+  try {
+  const rn=document.getElementById('result-name'); if(rn) rn.textContent='Resultados de '+state.name;
+  const re_=document.getElementById('result-email'); if(re_) re_.textContent=state.email;
+  const ra=document.getElementById('result-age'); if(ra) ra.textContent='Grupo etario: '+state.age+' años';
 
   // IBT gauge
   const ibt=state.ibt;
@@ -1217,6 +1225,7 @@ function renderResults(){
 
   // Recomendaciones
   renderRecommendations();
+  } catch(e){ console.error('renderResults error:',e); }
 }
 
 function drawRadarChart(){
