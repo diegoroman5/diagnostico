@@ -562,7 +562,7 @@ function renderA(){
   container.innerHTML = '';
   q.options.forEach((opt, i)=>{
     const btn = document.createElement('button');
-    btn.className = 'option-btn' + (saved===i?' selected':'');
+    btn.className = 'opt' + (saved===i?' selected':'');
     btn.textContent = opt;
     btn.onclick = ()=>{ state.aAnswers[key]=i; renderA(); };
     container.appendChild(btn);
@@ -692,7 +692,7 @@ function b2BuildOptions(){
   container.innerHTML='';
   all.forEach(w=>{
     const btn=document.createElement('button');
-    btn.className='option-btn';
+    btn.className='opt';
     btn.textContent=w;
     btn.onclick=()=>b2Toggle(btn,w);
     container.appendChild(btn);
@@ -985,7 +985,7 @@ function b6RenderQ(){
   const container=document.getElementById('b6-q-options'); container.innerHTML='';
   q.opts.forEach((opt,i)=>{
     const btn=document.createElement('button');
-    btn.className='option-btn'; btn.textContent=opt;
+    btn.className='opt'; btn.textContent=opt;
     btn.onclick=()=>b6Answer(i);
     container.appendChild(btn);
   });
@@ -1041,7 +1041,7 @@ function renderC(){
   const container=document.getElementById('c-options'); container.innerHTML='';
   q.options.forEach((opt,i)=>{
     const btn=document.createElement('button');
-    btn.className='option-btn'+(saved===i?' selected':'');
+    btn.className='opt'+(saved===i?' selected':'');
     btn.textContent=opt;
     btn.onclick=()=>{ state.cAnswers[cCurrent]=i; renderC(); };
     container.appendChild(btn);
