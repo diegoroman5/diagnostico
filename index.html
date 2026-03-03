@@ -307,7 +307,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
   <div class="task-title">TAREA 4 DE 6 — Velocidad de Procesamiento</div>
   <h2>Sustitución Símbolo-Dígito</h2>
   <div id="b4-phase-instructions">
-    <p>Arriba verás 9 pares <strong>símbolo → número</strong>. Abajo aparecerá un símbolo. Toca el número que le corresponde, tan rápido como puedas. Tienes <strong>90 segundos</strong>.</p>
+    <p>Verás 9 pares <strong>símbolo → número</strong>. Durante la <strong>práctica</strong> la tabla estará visible para que la memorices. En la <strong>prueba real</strong> la tabla desaparece: deberás recordar los pares y responder tan rápido como puedas en <strong>90 segundos</strong>.</p>
     <div class="sdmt-key" id="b4-key-preview"></div>
     <div class="btn-center"><button class="btn btn-primary" onclick="b4StartPractice()">Practicar primero →</button></div>
   </div>
@@ -852,6 +852,8 @@ function b4StartTest(){
   document.getElementById('b4-score-live').textContent='0';
   document.getElementById('b4-timer').textContent='90s';
   document.getElementById('b4-tbar').style.width='100%';
+  // Hide the key during the real test — now it's a true memory + speed task
+  document.getElementById('b4-key').style.display='none';
   b4State.timer=setInterval(()=>{
     b4State.timeLeft--;
     const pct=Math.round(b4State.timeLeft/90*100);
@@ -1284,8 +1286,9 @@ function b4StartPractice(){
   document.getElementById('b4-phase-instructions').style.display='none';
   document.getElementById('b4-phase-active').style.display='';
   document.getElementById('b4-timer').textContent='Práctica';
-  document.getElementById('b4-score-live').textContent='';
+  document.getElementById('b4-score-live').textContent='Memoriza la tabla arriba y selecciona el número correcto';
   document.getElementById('b4-start-btn').style.display='none';
+  document.getElementById('b4-key').style.display=''; // key visible during practice
 }
 function b5Start(mode){
   if(mode==='practice'){
