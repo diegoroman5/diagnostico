@@ -80,7 +80,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
 .digit-btns{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
 .digit-btns button{padding:14px;font-size:1.2rem;font-weight:700;border:2px solid #E0E6ED;border-radius:10px;cursor:pointer;background:#fff;transition:all .15s}
 .digit-btns button:hover{background:var(--lblue);border-color:var(--blue)}
-.big-display{font-size:5rem;font-weight:900;text-align:center;padding:28px 0;color:var(--dark);letter-spacing:8px;min-height:120px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--lblue),#fff);border-radius:16px;margin:16px 0;border:2px solid var(--blue)}
+.big-display{font-size:8rem;font-weight:900;text-align:center;padding:32px 0;color:var(--dark);letter-spacing:10px;min-height:160px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--lblue),#fff);border-radius:16px;margin:16px 0;border:2px solid var(--blue)}
 .big-display.flash{background:linear-gradient(135deg,#651FFF,#18FFFF);color:#fff;transform:scale(1.05);transition:all .15s}
 /* STROOP */
 .stroop-word{font-size:3.5rem;font-weight:900;text-align:center;padding:30px;min-height:110px;display:flex;align-items:center;justify-content:center;letter-spacing:4px}
@@ -145,7 +145,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
   .opt{padding:12px 14px;font-size:.9rem;gap:8px}
 
   /* Pantallas cognitivas — display grande (B1/B2) */
-  .big-display{font-size:2.8rem;letter-spacing:4px;padding:20px 0;min-height:90px}
+  .big-display{font-size:5rem;letter-spacing:6px;padding:24px 0;min-height:130px}
 
   /* Numpad (B1/B2) */
   .numpad{gap:6px}
@@ -208,7 +208,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
   .q-label{font-size:.95rem}
   .opt{padding:11px 12px;font-size:.88rem}
 
-  .big-display{font-size:2.2rem;letter-spacing:2px}
+  .big-display{font-size:4rem;letter-spacing:4px}
 
   /* SDMT más compacto */
   .sdmt-pair .sym{font-size:.72rem}
@@ -742,8 +742,8 @@ function b1ShowNext(){
   const d = document.getElementById('b1-display');
   if(b1State.showIdx < b1State.digits.length){
     d.textContent = b1State.digits[b1State.showIdx];
-    d.className = 'digit-display flash';
-    setTimeout(()=>{ d.className='digit-display'; b1State.showIdx++; setTimeout(b1ShowNext,300); },800);
+    d.className = 'big-display flash';
+    setTimeout(()=>{ d.className='big-display'; b1State.showIdx++; setTimeout(b1ShowNext,300); },800);
   } else {
     d.textContent='?';
     showPhase('b1-','input');
