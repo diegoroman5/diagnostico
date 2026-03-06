@@ -406,7 +406,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
   <div class="task-title">TAREA 4 DE 6 — Velocidad de Procesamiento</div>
   <h2>Sustitución Símbolo-Dígito</h2>
   <div id="b4-phase-instructions">
-    <p>Verás 9 pares <strong>símbolo → número</strong>. Durante la <strong>práctica</strong> la tabla estará visible para que la memorices. En la <strong>prueba real</strong> la tabla desaparece: deberás recordar los pares y responder tan rápido como puedas en <strong>90 segundos</strong>.</p>
+    <p>Verás 9 pares <strong>símbolo → número</strong>. Durante la <strong>práctica</strong>, la tabla estará visible para que la memorices. En la <strong>prueba real</strong> la tabla desaparece: deberás recordar los pares y responder tan rápido como puedas en <strong>90 segundos</strong>.</p>
     <div class="sdmt-key" id="b4-key-preview"></div>
     <div class="btn-center"><button class="btn btn-primary" onclick="b4StartPractice()">Practicar primero →</button></div>
   </div>
@@ -479,7 +479,7 @@ p{color:var(--text);line-height:1.7;margin-bottom:12px}
   <div class="task-title">TAREA 6 DE 6 — Comprensión Lectora</div>
   <h2>Lectura Aplicada</h2>
   <div id="b6-phase-start" style="text-align:center;padding:24px 0">
-    <p style="font-size:1rem;margin-bottom:8px">Lee el texto <strong>a tu ritmo habitual</strong> como lo harías en el trabajo.</p>
+    <p style="font-size:1rem;margin-bottom:8px">Lee el texto <strong>a tu ritmo habitual</strong>, como lo harías en el trabajo.</p>
     <p style="font-size:.88rem;color:var(--light);margin-bottom:20px">El cronómetro arranca cuando presiones el botón. Cuando termines de leer, presiona <strong>"Terminé de leer"</strong>.</p>
     <div style="font-size:3rem;font-weight:900;color:var(--blue);margin:16px 0">📖</div>
     <button class="btn btn-primary" onclick="b6BeginReading()">Comenzar a leer →</button>
@@ -616,12 +616,12 @@ const aModules = [
     { label:'¿Con qué frecuencia tardas más de 30 minutos en quedarte dormido?', options:['Nunca (4)','1–2 veces/sem (3)','3–4 veces/sem (2)','5–6 veces/sem (1)','Todos los días (0)'], values:[4,3,2,1,0] }
   ]},
   { key:'burnout', title:'Módulo 2 — Bienestar Laboral (Burnout)', sub:'Piensa en tu trabajo de los últimos 30 días', questions:[
-    { label:'Me siento emocionalmente agotado por mi trabajo.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
-    { label:'Me siento "vaciado" al final de la jornada laboral.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
-    { label:'Me siento fatigado cuando me levanto y tengo que ir al trabajo.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
-    { label:'Trabajar todo el día es realmente un esfuerzo para mí.', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
-    { label:'Puedo solucionar eficazmente los problemas que surgen.', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] },
-    { label:'Siento que estoy contribuyendo positivamente a mi organización.', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] }
+    { label:'¿Te sientes emocionalmente agotado/a por tu trabajo?', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'¿Te sientes "vaciado/a" al final de la jornada laboral?', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'¿Te sientes fatigado/a cuando te levantas y tienes que ir al trabajo?', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'¿Trabajar todo el día es realmente un esfuerzo para ti?', options:['Nunca (4)','Pocas veces (3)','A veces (2)','Frecuentemente (1)','Siempre (0)'], values:[4,3,2,1,0] },
+    { label:'¿Puedes solucionar eficazmente los problemas que surgen en tu trabajo?', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] },
+    { label:'¿Sientes que estás contribuyendo positivamente a tu organización?', options:['Nunca (0)','Pocas veces (1)','A veces (2)','Frecuentemente (3)','Siempre (4)'], values:[0,1,2,3,4] }
   ]},
   { key:'physical', title:'Módulo 3 — Bienestar Físico', sub:'Hábitos físicos recientes', questions:[
     { label:'¿Con qué frecuencia realizas actividad física moderada o intensa?', options:['Nunca (0)','1 vez/sem (1)','2–3 veces/sem (2)','4–5 veces/sem (3)','Todos los días (4)'], values:[0,1,2,3,4] },
@@ -1172,17 +1172,17 @@ function b6Done(){
 
 // ─── SECCIÓN C ────────────────────────────────────────────────────────────────
 const cQuestions=[
-  { label:'Antes de leer un texto extenso, me pregunto qué sé sobre el tema y qué quiero aprender.',
+  { label:'Antes de leer un texto extenso, ¿te preguntas qué sabes sobre el tema y qué quieres aprender?',
     options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
-  { label:'Mientras leo, me doy cuenta cuando un párrafo no tiene sentido y vuelvo a leerlo.',
+  { label:'Mientras lees, ¿te das cuenta cuando un párrafo no tiene sentido y vuelves a leerlo?',
     options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
-  { label:'Después de leer, hago un resumen mental de los puntos clave del texto.',
+  { label:'Después de leer, ¿haces un resumen mental de los puntos clave del texto?',
     options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
-  { label:'Ajusto mi velocidad de lectura según la dificultad del texto.',
+  { label:'¿Ajustas tu velocidad de lectura según la dificultad del texto?',
     options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
-  { label:'Cuando no entiendo algo, tengo estrategias claras para resolverlo (buscar, releer, preguntar).',
+  { label:'Cuando no entiendes algo, ¿tienes estrategias claras para resolverlo (buscar, releer, preguntar)?',
     options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] },
-  { label:'Reflexiono sobre si realmente comprendí lo que leí antes de pasar al siguiente texto.',
+  { label:'¿Reflexionas sobre si realmente comprendiste lo que leíste antes de pasar al siguiente texto?',
     options:['Nunca (1)','Pocas veces (2)','A veces (3)','Frecuentemente (4)'], values:[1,2,3,4] }
 ];
 let cCurrent=0;
